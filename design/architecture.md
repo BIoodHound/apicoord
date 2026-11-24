@@ -1,7 +1,7 @@
 # APICoord — Architecture
 
 > Owned by the architect. Everyone else reads it to know where things go.
-> State: **Increment 1 (M1) — "a working split view" — BUILD, first task applied (2026-11-24).**
+> State: **Increment 1 (M1) — "a working split view" — BUILD, T002 (T0) blocked by B2 (3 attempts); apply-verbatim set in §0.2 (2026-11-24).**
 > Specs `design/specs/m1-*.md` (operator-approved), council decision `design/council/m1/decision.md`,
 > operator answers Q1–Q7 folded into §13. §5 is the **authoritative IPC contract**. `design/ipc-contract.md`
 > must be replaced with §5 verbatim (the ownership hook blocks the architect, see B2).
@@ -26,6 +26,322 @@ These are outside every agent's lane, and each one blocks T0.
 Gate result, re-run 2026-11-24 by the architect: `cd backend && mvn -q test` → `cd: backend: No such file or directory`;
 `npm test -- --run` → `vitest: not found` (B4); `cargo` is not installed (B3). **Nothing ran. The gate is red for environmental reasons, not code.**
 The only existing tests are `src/__tests__/App.test.tsx` (1 test) and `commands/health.rs::ping_returns_ok`.
+
+### 0.1 T002 status (2026-11-24): blocked by B2, nothing applied
+
+T002 was assigned to the architect, but the hook still applies the Spring lane map. It rejected `Write` on
+`package.json` and `vite.config.ts` in the worktree, and on scratch copies in `/tmp`. The architect may write only
+`design/architecture.md`, `design/api-contract.md`, `backend/**` and `frontend/**`. **No §9 delta is applied.**
+QA was blocked the same way. Its gate tests exist only as text in `bugs/t002-qa-lane-blocked-gate-tests-undeliverable.md`,
+and `tests/task_t002/` does not exist.
+
+Checked by the architect before being blocked, so the owner can apply §9 verbatim:
+- **§9.5 schema hashes:** downloaded both URLs. `oas-3.0.json` (35,752 B, LF, trailing newline) hashes to `7a0db731…822cf`,
+  and `oas-3.1.json` (33,992 B) hashes to `da01ba28…14ed0`, matching §9.5 exactly. Vendor them with
+  `curl -sSL -o` (byte-exact). Do not retype them through an editor.
+- **§9.1 versions:** all resolve on npm today: monaco-editor 0.54.0, monaco-yaml 5.5.1 (peer `monaco-editor >=0.36`),
+  swagger-ui-react 5.36.0 (peer react `>=16.8 <20`), @monaco-editor/react 4.7.0, zustand 5.1.0, yaml 2.9.1,
+  @types/swagger-ui-react 5.18.0, react 18.3.1.
+- **§9.2:** `tsc -b --force` exits 0 with `types: ["vite/client", "vitest/globals", "@testing-library/jest-dom"]`.
+  `vitest --run` passes App.test.tsx. In vite.config.ts, import `defineConfig`/`configDefaults` from `vitest/config` and set
+  `test.exclude: [...configDefaults.exclude, 'tests/fixtures/**']`. Without the spread, vitest stops excluding `node_modules`.
+- **QA's C2 test** imports `node:*` from `tests/`. That is fine, because tsconfig `include: ["src"]` keeps it out of `tsc -b`.
+
+To unblock: either re-map the lanes (B1/B2), or have the orchestrator, which has no lane, apply **§0.2 verbatim**
+(this is the full T002 file set, and it supersedes the prose in §9 and §12 for T002). It should also place QA's three files from the bug verbatim,
+then run `npm install`. **Do not apply §12's `lib.rs` in T002.** It references `menu`, `state` and `apicoord_core::{schemas,mru}`,
+which don't exist yet, so it would not compile. Feature tasks grow into §12.
+
+**Attempt 2 (2026-11-24):** still blocked. The hook rejected `Edit` on `package.json` with the same Spring lane list
+(`frontend/package.json`, `backend/pom.xml`, …). B1–B4 are unchanged: `cargo` is still absent, and so are `node_modules`
+and `tests/task_t002/`. The architect re-verified both schema sha256 values against upstream (streamed, nothing written)
+and re-resolved every §9.1 version on npm (all still resolve as listed). It then wrote §0.2.
+
+**Attempt 3 (2026-11-24):** still blocked. The architect's first action was a `Write` to `package.json`, which the hook rejected
+with the same Spring list (`frontend/package.json`, `backend/pom.xml`, …). The task text says QA's tests are already in
+`tests/task_t002/`, but **that directory does not exist**: the tests are still only text in the bug file. Re-verified today:
+both schema sha256 values match upstream (streamed, nothing written), every §9.1 pin resolves (monaco-editor 0.54.0,
+monaco-yaml 5.5.1, swagger-ui-react 5.36.0, @monaco-editor/react 4.7.0, react 18.3.1, @types/swagger-ui-react 5.18.0),
+`cargo` is still absent (B3), and so is `node_modules` (B4). Steps 4, 6 and 7 of §0.2 are now complete file contents instead of
+edit instructions, so they can be applied mechanically. **Re-dispatching T002 to the architect cannot succeed until B2 is re-mapped.**
+
+### 0.2 T002 apply-verbatim file set (for the orchestrator, or for the architect once B2 is re-mapped)
+
+Each block is the **complete file content**. The order matters only for step 9 (npm install after package.json).
+
+1. **`package.json`** (overwrite)
+```json
+{
+  "name": "apicoord",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "typecheck": "tsc -b",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "~4.7.0",
+    "@tauri-apps/api": "^2.1.1",
+    "monaco-editor": "~0.54.0",
+    "monaco-yaml": "~5.5.1",
+    "react": "~18.3.1",
+    "react-dom": "~18.3.1",
+    "swagger-ui-react": "~5.36.0",
+    "yaml": "^2.9.1",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/swagger-ui-react": "~5.18.0",
+    "@vitejs/plugin-react": "^4.3.3",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.4"
+  }
+}
+```
+
+2. **`tsconfig.json`**: change only the `types` line to
+`"types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"]`.
+
+3. **`vite.config.ts`** (overwrite)
+```ts
+import { defineConfig, configDefaults } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+
+// Tauri expects a fixed port + no HMR webSocket over a separate port.
+const host = process.env.TAURI_DEV_HOST
+
+export default defineConfig({
+  plugins: [react()],
+  clearScreen: false,
+  server: {
+    port: 1420,
+    strictPort: true,
+    host: host || false,
+    hmr: host ? { protocol: 'ws', host, port: 1421 } : undefined,
+    watch: { ignored: ['**/src-tauri/**'] },
+  },
+  worker: { format: 'es' },
+  build: { target: 'chrome105', sourcemap: false },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/__tests__/setup.ts'],
+    exclude: [...configDefaults.exclude, 'tests/fixtures/**'],
+  },
+})
+```
+
+4. **`src-tauri/tauri.conf.json`** (overwrite; this is the current file plus `label` and the §9.3 CSP objects)
+```json
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "APICoord",
+  "version": "0.0.1",
+  "identifier": "com.weeznha.apicoord",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "APICoord",
+        "width": 1200,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data:",
+        "font-src": "'self' data:",
+        "worker-src": "'self' blob:",
+        "connect-src": "ipc: http://ipc.localhost",
+        "object-src": "'none'",
+        "frame-src": "'none'",
+        "base-uri": "'none'",
+        "form-action": "'none'"
+      },
+      "devCsp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data:",
+        "font-src": "'self' data:",
+        "worker-src": "'self' blob:",
+        "connect-src": "ipc: http://ipc.localhost ws://localhost:1420",
+        "object-src": "'none'"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
+```
+`http://ipc.localhost` is the only http origin. It is Tauri's own IPC transport on Windows/WebView2, not a remote origin.
+
+5. **`src-tauri/capabilities/default.json`** (overwrite)
+```json
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Baseline webview permissions. Never widen this file; add narrow files instead.",
+  "windows": ["main"],
+  "permissions": ["core:default", "core:window:allow-set-title"]
+}
+```
+   **`src-tauri/capabilities/window-lifecycle.json`** (new)
+```json
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "window-lifecycle",
+  "description": "Lets the close-requested flow destroy the main window after the dirty prompt.",
+  "windows": ["main"],
+  "permissions": ["core:window:allow-destroy"]
+}
+```
+
+6. **`src-tauri/Cargo.toml`** (overwrite)
+```toml
+[package]
+name = "app"
+version = "0.0.1"
+description = "Desktop scaffold generated by software-pipeline"
+authors = ["Weeznha"]
+edition = "2021"
+rust-version = "1.75"
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+apicoord-core = { path = "core" }
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+tracing = "0.1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "fs", "io-util"] }
+
+[features]
+default = []
+custom-protocol = ["tauri/custom-protocol"]
+
+[workspace]
+members = ["core"]
+default-members = [".", "core"]
+```
+
+7. **`src-tauri/src/lib.rs`** (overwrite; this is today's file minus the `tauri_plugin_fs` line, and it compiles against the current `commands`/`error` modules)
+```rust
+//! Tauri application entry. The architect owns this file: it wires up plugins,
+//! managed state, and the IPC command registry. Command implementations live in
+//! `commands/`.
+
+mod commands;
+mod error;
+
+use commands::health;
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .invoke_handler(tauri::generate_handler![
+            health::ping,
+        ])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+```
+
+8. **`src-tauri/core/Cargo.toml`** (new)
+```toml
+[package]
+name = "apicoord-core"
+version = "0.0.1"
+edition = "2021"
+rust-version = "1.75"
+description = "Pure, tauri-free logic for APICoord (text codec, EOL, MRU, paths, schemas)."
+
+[lib]
+name = "apicoord_core"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+
+[dev-dependencies]
+tempfile = "3"
+```
+   **`src-tauri/core/src/lib.rs`** (new)
+```rust
+//! apicoord-core: pure logic with no tauri dependency (architecture.md §2, D7).
+//! Feature tasks add the §12 modules (error, models, textcodec, eol, doc, mru, paths, fsx, schemas, sniff).
+
+/// OpenAPI 3.0 schema (draft-04), vendored byte-exact. sha256 recorded in §9.5.
+pub const OAS_3_0: &str = include_str!("../schemas/oas-3.0.json");
+/// OpenAPI 3.1 schema (2020-12), vendored byte-exact. sha256 recorded in §9.5.
+pub const OAS_3_1: &str = include_str!("../schemas/oas-3.1.json");
+```
+   **Schemas** (byte-exact; this is a one-time, authoring-time download, and the app makes no network calls):
+```
+mkdir -p src-tauri/core/schemas
+curl -sSL -o src-tauri/core/schemas/oas-3.0.json https://spec.openapis.org/oas/3.0/schema/2021-09-28
+curl -sSL -o src-tauri/core/schemas/oas-3.1.json https://spec.openapis.org/oas/3.1/schema/2022-10-07
+sha256sum src-tauri/core/schemas/*.json   # must print 7a0db731…822cf and da01ba28…14ed0
+```
+
+9. **QA's files**, verbatim from `bugs/t002-qa-lane-blocked-gate-tests-undeliverable.md`: `tests/shared/projectFiles.ts`,
+`tests/task_t002/foundation-config.test.ts` and `src-tauri/core/tests/task_t002_schemas.rs`.
+
+10. **Install and verify** (from the project root):
+```
+npm install                                   # writes package-lock.json; commit it (not node_modules)
+npm run typecheck                             # tsc -b → exit 0
+npm test -- --run                             # 12 tests: App.test.tsx (1) + tests/task_t002 (11)
+cargo test -p apicoord-core --manifest-path src-tauri/Cargo.toml   # B3 fallback: needs rustup only
+cargo test --manifest-path src-tauri/Cargo.toml                    # full gate: also needs webkit2gtk-4.1 (B3)
+```
+Check after the install: `grep -c plugin-fs package-lock.json` must print `0`, and
+`git grep -n "plugin-fs\|plugin-dialog" -- src` must find nothing in the frontend.
+
+How §0.2 maps to QA's assertions: C1 → 1, 10; C2 → 1, 2; C3 → 6, 8, 9; C4 → 3; C5 → 5, 7; C6 → 4; C7 → 8.
 
 **Correct gate for this repo** (m1-foundation T0), run from `projects/apicoord/`:
 ```
