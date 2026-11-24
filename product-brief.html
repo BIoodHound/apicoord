@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>APICoord — Product Brief</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1.25rem; line-height: 1.55; }
+  h1, h2, h3 { line-height: 1.25; }
+  h1 { border-bottom: 2px solid currentColor; padding-bottom: 0.35rem; }
+  h2 { margin-top: 2rem; border-bottom: 1px solid #8884; padding-bottom: 0.2rem; }
+  h3 { margin-top: 1.5rem; }
+  code { background: #8882; padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.95em; }
+  pre { background: #8882; padding: 0.8rem 1rem; border-radius: 6px; overflow-x: auto; }
+  pre code { background: transparent; padding: 0; }
+  blockquote { border-left: 4px solid #8886; margin: 0.5rem 0; padding: 0.4rem 1rem; opacity: 0.85; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  th, td { border: 1px solid #8884; padding: 0.4rem 0.6rem; text-align: left; vertical-align: top; }
+  th { background: #8882; }
+  ul, ol { padding-left: 1.5rem; } li + li { margin-top: 0.15rem; }
+  a { color: #4a7cb4; }
+  hr { border: none; border-top: 1px solid #8884; margin: 1.5rem 0; }
+</style></head><body>
+<h1 id="apicoord-product-brief">APICoord — Product Brief</h1>
+<blockquote>
+<p>Vision, scope, and non-negotiables. Operator-owned document.
+The review board reads this before every increment.</p>
+</blockquote>
+<h2 id="one-line-pitch">One-line pitch</h2>
+<p>A fast, local-first Windows desktop app that lets engineers edit OpenAPI specs (3.0 and 3.1, YAML or JSON) by typing in Monaco on one side and seeing a live Swagger-style view on the other, with an embedded terminal for an external AI assistant (e.g. Claude Code) to help navigate the spec via a generated "reader" file.</p>
+<h2 id="users-and-their-jobs-to-be-done">Users and their jobs-to-be-done</h2>
+<ul>
+<li><strong>Primary users:</strong> Leo and colleagues at work who edit OpenAPI specs frequently and lose time jumping around large documents.</li>
+<li><strong>Secondary (future):</strong> engineers on other teams and independent OpenAPI authors.</li>
+<li><strong>Jobs:</strong></li>
+<li>Open a large OpenAPI spec and find a specific operation / schema / security scheme quickly.</li>
+<li>Edit the spec with proper YAML/JSON awareness (schema validation, autocomplete, linting) and immediate visual feedback.</li>
+<li>Point an AI agent at the spec and ask it to find or summarize parts, without leaving the editor window.</li>
+<li>Save the edited spec back to disk reliably; no cloud, no accounts, no account "noise".</li>
+</ul>
+<h2 id="scope-in-out">Scope — in / out</h2>
+<p><strong>In scope for v1 (3 increments, see below):</strong>
+- Open and edit local files: OpenAPI 3.0 and 3.1, YAML or JSON. Save, Save As, autosave.
+- Split layout: Monaco editor on one side, <code>swagger-ui-react</code> view on the other.
+- Live sync: typing in Monaco debounced-parses and updates the Swagger view (last-good parse retained on error).
+- Click an operation in the Swagger view → cursor jumps to that YAML/JSON line in Monaco.
+- Live validation: schema validation against the OpenAPI 3.0 / 3.1 schemas with red squiggles and inline messages.
+- Performance targets (Windows 10 1809+, Pi-class hardware is not the target — modern laptops):
+  - Cold start &lt; 500ms
+  - Open and render a 10,000-line spec &lt; 500ms
+  - Keystroke → preview update p95 &lt; 250ms
+  - Scroll the editor and preview at a sustained 60fps
+- "Reader" file: on every save, write <code>&lt;spec-name&gt;.reader.md</code> next to the spec — a human- and LLM-friendly map (TOC of paths and operations with line numbers back to the YAML, schemas and where they're used, security schemes, tags, any validation warnings).
+- "Copy context for Claude" command (keyboard shortcut + menu): copies a structured block to the clipboard with the current spec path, the reader file path, the current cursor line, and the current selection.
+- Embedded terminal pane inside the app window:
+  - Real OS shell via a PTY (default <code>pwsh.exe</code> on Windows; user-overridable).
+  - Launches with the spec folder as the working directory.
+  - Preloads env vars <code>OPENAPI_FILE</code>, <code>READER_FILE</code>, <code>APP_CURRENT_LINE</code> (updated on save and when the cursor moves significantly).
+  - Multiple tabs supported.
+- No telemetry, no analytics, no network calls (schema fetch for validation is the only exception, and the user can disable it).</p>
+<p><strong>Explicitly out of scope for v1 — deferred to future increments (not "never"):</strong>
+- Multi-file / external <code>$ref</code> resolution (the kind of reference that points to another file on disk or a URL).
+- Diff mode (two specs side-by-side, highlighted differences).
+- In-app chat with Anthropic / OpenAI / Ollama (we have a terminal; the user brings their own agent).
+- Export to other formats (e.g. Markdown documentation, Postman collection, ReDoc static site).
+- New-spec templates / wizards.
+- Git integration (commit/push from inside the app).
+- macOS and Linux builds.</p>
+<p><strong>Permanently out of scope:</strong>
+- Hosted / cloud spec storage.
+- Accounts, sync, sharing, collaboration features.
+- Running the described API (making requests, response validation of live services).
+- AI model inference inside the app binary (we are not shipping a bundled model).</p>
+<h2 id="non-functional-requirements">Non-functional requirements</h2>
+<ul>
+<li><strong>Platform:</strong> Windows 10 1809+ for v1. macOS / Linux deferred.</li>
+<li><strong>Startup:</strong> cold start &lt; 500ms, measured from user double-click to first paint.</li>
+<li><strong>Memory:</strong> &lt; 200MB at idle with one small spec open; &lt; 500MB with a 10k-line spec open.</li>
+<li><strong>Large-file:</strong> open a 10,000-line YAML spec in &lt; 500ms; scroll at 60fps.</li>
+<li><strong>Live-sync latency:</strong> keystroke → preview p95 &lt; 250ms.</li>
+<li><strong>Offline:</strong> fully offline-capable. The only optional network call is fetching the OpenAPI JSON schema for Monaco validation; cached after first fetch, disable-able in settings.</li>
+<li><strong>Accessibility:</strong> WCAG 2.1 AA for custom UI; respect OS high-contrast and DPI scaling.</li>
+<li><strong>Security:</strong> no telemetry, no analytics, no automatic update calls on launch (opt-in in settings).</li>
+<li><strong>Data:</strong> local files only. No background sync. No crash-reporting that sends anything off the machine without explicit opt-in.</li>
+</ul>
+<h2 id="stack-locked-by-the-teams-conventions">Stack (locked by the team's conventions)</h2>
+<ul>
+<li><code>stack: rust-tauri+ts-react</code></li>
+<li>Shell: Tauri 2.x</li>
+<li>Backend: Rust (stable, edition 2021), Tokio async runtime</li>
+<li>Frontend: React 18, Vite, TypeScript (strict)</li>
+<li>Editor: Monaco (<code>@monaco-editor/react</code>) with YAML support (<code>monaco-yaml</code>) for schema validation</li>
+<li>API view: <code>swagger-ui-react</code>, <code>supportedSubmitMethods: []</code> (no "Try it out" button)</li>
+<li>Terminal: <code>xterm.js</code> + <code>@xterm/addon-fit</code> on the frontend, <code>portable-pty</code> on the Rust side</li>
+<li>YAML parsing (with line numbers for cross-pane navigation): <code>yaml</code> (eemeli/yaml) on the frontend for AST + range info; <code>serde_yaml</code> on Rust for authoritative parse during validation and reader generation</li>
+<li>Tests: <code>cargo test</code> (Rust) + Vitest + React Testing Library (frontend)</li>
+<li>Packaging: MSI + NSIS via <code>cargo tauri build</code></li>
+</ul>
+<h2 id="mode">Mode</h2>
+<ul>
+<li><code>mode: greenfield</code></li>
+</ul>
+<h2 id="taxonomy-ingredient-model">Taxonomy / ingredient model</h2>
+<p>Not applicable (no CRUD domain).</p>
+<h2 id="increments">Increments</h2>
+<h3 id="increment-1-a-working-split-view">Increment 1 — "A working split view"</h3>
+<p>Deliverables:
+- Tauri shell launches on Windows, displays a split pane: Monaco left, <code>swagger-ui-react</code> right.
+- File menu: Open, Save, Save As, Recent (last 5), Close. Native dialogs via <code>plugin-dialog</code>.
+- Monaco loads a YAML or JSON OpenAPI 3.0/3.1 file. Language auto-detected from file extension; user override in a status-bar dropdown.
+- Debounced parse (200ms) updates the Swagger view; parse errors keep the last-good view and show an inline toast.
+- Schema validation on by default (fetch 3.1 schema once, cache in <code>app_data_dir</code>). Red squiggles in Monaco.
+- Save writes the file to disk (encoding: UTF-8, LF line endings by default; preserve what the file originally had when known).
+- No reader file yet, no terminal yet, no jump-to-line yet — those arrive in Increments 2 and 3.
+- Smoke-test performance: open the Petstore 3.1 spec (~250 lines) in &lt; 200ms on the target hardware.</p>
+<p><strong>Acceptance (manual):</strong>
+- A colleague opens a 10,000-line spec; the UI remains responsive while Monaco finishes highlighting.
+- Typing a syntax error into the YAML shows a red squiggle within 300ms; fixing it clears the squiggle.
+- Saving and reopening the file produces a byte-identical output when no edits were made.</p>
+<h3 id="increment-2-the-reader-file-and-the-copy-context-command">Increment 2 — "The reader file and the copy-context command"</h3>
+<p>Deliverables:
+- On every save, Rust generates <code>&lt;spec-name&gt;.reader.md</code> next to the spec. Contents:
+  - Front matter with spec title, version, source path.
+  - Table of contents: all paths grouped by first-level tag, each operation with its summary and line number.
+  - Schemas section: every component schema with its name, "used by" list, and line number.
+  - Security schemes section: list each scheme with its type and line number.
+  - Tags section with description.
+  - Validation warnings section: each violation with its location.
+- <code>Copy context for Claude</code> command (Ctrl+Shift+Y): puts a Markdown block on the clipboard with the spec path, the reader file path, the current cursor line, and the current selection.
+- Clicking an operation in the Swagger view scrolls Monaco to that operation's definition line.
+- Keyboard shortcut and menu entry for the above.</p>
+<p><strong>Acceptance (manual):</strong>
+- Open a non-trivial spec, hit Save. A <code>&lt;name&gt;.reader.md</code> appears next to it and matches the spec's structure.
+- Hit Ctrl+Shift+Y. Paste into a Claude Code session; Claude can locate operations by line number.</p>
+<h3 id="increment-3-embedded-terminal">Increment 3 — "Embedded terminal"</h3>
+<p>Deliverables:
+- Terminal pane (collapsible, docked to the bottom or right — operator picks at design-review).
+- New Terminal (Ctrl+<code>) opens a tab with the current spec's folder as cwd.
+- Shell is</code>pwsh.exe<code>on Windows by default; user-overridable in Settings.
+- Env vars</code>OPENAPI_FILE<code>,</code>READER_FILE<code>,</code>APP_CURRENT_LINE` are set on spawn and updated on save / cursor move (debounced, 500ms).
+- Terminal resizes with the pane (debounced, 150ms).
+- Scrollback cap: 10,000 lines.
+- Font family and size follow OS defaults with user override.
+- Closing a tab kills the child cleanly (no zombies).
+- Multiple terminal tabs supported.</p>
+<p><strong>Acceptance (manual):</strong>
+- Open the editor, then open a terminal tab. Type <code>echo %OPENAPI_FILE%</code> — shows the currently-open spec path.
+- Launch Claude Code in that terminal. Claude can read the spec and the reader file without the user typing any path.
+- Close the app. Task Manager shows no orphaned <code>pwsh.exe</code> or <code>claude</code> child processes.</p>
+<h2 id="compliance-notes">Compliance notes</h2>
+<ul>
+<li>GDPR: this app does not collect or process personal data. No accounts, no telemetry, no analytics.</li>
+<li>The only outbound network call is the (opt-out) schema fetch for Monaco validation; this is a request to a public URL (<code>https://spec.openapis.org/...</code>) and the response is cached locally.</li>
+<li>No privacy policy page required in-app (purely local tool).</li>
+</ul>
+<h2 id="open-questions-for-the-review-board">Open questions for the review board</h2>
+<p>(None at brief time — the operator has answered all scope and stack decisions.)</p>
+<h2 id="operator">Operator</h2>
+<ul>
+<li>Name: Leo</li>
+<li>GitHub repo: https://github.com/BIoodHound/apicoord</li>
+<li>Timezone: Atlantic/Canary</li>
+<li>Approvals happen in the terminal with <code>approve</code> / <code>reject --notes "..."</code>.</li>
+<li>Dashboard LAN-access: <code>python -m orchestrator dashboard --lan</code>.</li>
+</ul>
+</body></html>

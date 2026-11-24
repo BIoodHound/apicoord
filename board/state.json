@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "increment": null,
+  "history": [],
+  "bugs": [],
+  "usage_cap": null,
+  "pause_requested": false,
+  "next_task": 1,
+  "next_bug": 1
+}
