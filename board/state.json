@@ -6,5 +6,72 @@
   "usage_cap": null,
   "pause_requested": false,
   "next_task": 1,
-  "next_bug": 1
+  "next_bug": 1,
+  "milestone": {
+    "id": 1,
+    "goal": "Increment 1 \u2014 A working split view. Deliver: Tauri 2.x shell launching on Windows, file menu (Open/Save/Save As/Recent/Close via native dialogs), Monaco editor loading OpenAPI 3.0/3.1 YAML+JSON (language auto-detected from extension with UI override), debounced parse (200ms) updating a swagger-ui-react view with 'Try it out' disabled, last-good view retained on parse errors, schema validation on by default via monaco-yaml against the OpenAPI 3.1 schema cached in app_data_dir, red squiggles for violations, Save preserving line endings and encoding. No reader file, no copy-context command, no terminal \u2014 those are Increment 2 and 3. Perf: open Petstore 3.1 in <200ms; 10k-line spec responsive during Monaco highlight; keystroke-to-preview p95 <250ms. See product-brief.md for the full brief, architecture.md for lanes, ipc-contract.md for the IPC starting point. The GitHub repo is at https://github.com/BIoodHound/apicoord and already has an initial scaffold commit \u2014 do NOT force-push or re-init; commits land as fast-forwards on main.",
+    "phase": "awaiting_spec_approval",
+    "started": "2026-11-24T11:35:21",
+    "director_notes": [],
+    "specs": [
+      "projects/apicoord/design/specs/m1-foundation.md",
+      "projects/apicoord/design/specs/m1-file-io.md",
+      "projects/apicoord/design/specs/m1-menu-lifecycle.md",
+      "projects/apicoord/design/specs/m1-editor.md",
+      "projects/apicoord/design/specs/m1-preview.md",
+      "projects/apicoord/design/specs/m1-validation.md"
+    ],
+    "tasks": [],
+    "bugs": [],
+    "cost_usd": 2.3522,
+    "summary": null,
+    "design_notes": null,
+    "tokens": {
+      "input": 92,
+      "output": 62747,
+      "cache_read": 444850,
+      "cache_write": 246774
+    },
+    "research": [
+      "studio/research/INDEX.md",
+      "studio/research/cached-remote-schema-offline.md",
+      "studio/research/latency-budgets-desktop-ui.md",
+      "studio/research/monaco-in-tauri.md",
+      "studio/research/native-file-menu-recent-files.md",
+      "studio/research/swagger-ui-react-embed.md",
+      "studio/research/tauri-capabilities.md",
+      "studio/research/tauri-ipc-patterns.md",
+      "studio/research/text-file-roundtrip.md"
+    ],
+    "council": {
+      "notes": null,
+      "round1": {
+        "product-manager": "projects/apicoord/design/council/m1/round1-product-manager.md",
+        "research": "projects/apicoord/design/council/m1/round1-research.md",
+        "qa-engineer": "projects/apicoord/design/council/m1/round1-qa-engineer.md",
+        "design-critic": "projects/apicoord/design/council/m1/round1-design-critic.md",
+        "architect": "projects/apicoord/design/council/m1/round1-architect.md"
+      },
+      "round2": {
+        "research": "projects/apicoord/design/council/m1/round2-research.md",
+        "product-manager": "projects/apicoord/design/council/m1/round2-product-manager.md",
+        "qa-engineer": "projects/apicoord/design/council/m1/round2-qa-engineer.md",
+        "design-critic": "projects/apicoord/design/council/m1/round2-design-critic.md",
+        "architect": "projects/apicoord/design/council/m1/round2-architect.md"
+      },
+      "decision": "projects/apicoord/design/council/m1/decision.md"
+    },
+    "spec_summary": "Six m1 specs (foundation, file-io, menu-lifecycle, editor, preview, validation) already existed and match the council decision, so I left them unchanged. The architecture.md update was blocked because product-manager does not own that file. The proposed content is in my reply for the architect to apply: Rust-owned file I/O, menu and MRU; frontend-owned buffer, parse worker, preview and validation; no network; strict CSP; the new module map; the fixed test gate; the keystroke-to-preview data flow; and M1 IPC commands and events. ipc-contract.md was not re-checked against the new commands.",
+    "open_questions": [
+      "Drop the remote schema fetch and copy the bundled 3.0 and 3.1 schemas into app_data_dir on first run (leaning, no network code), or keep a reqwest fetch with a bundled fallback? The brief and your goal asked for fetch-and-cache.",
+      "Windows performance verification: a manual QA run on a Windows laptop recorded in the increment report (leaning), or add a Windows CI runner?",
+      "If big-10k.yaml misses 250ms p95: report the miss and ship with a longer debounce above 5,000 lines (leaning), or hold the increment?",
+      "Save As on an unedited buffer: write the original bytes (assumed) or re-encode?",
+      "Does the session-only language override survive Save As? Assumed yes, and it resets when another file opens.",
+      "Mixed-EOL file after an edit: save with the majority EOL and show a status-bar note only (assumed), or prompt first?",
+      "Show encoding and EOL in the status bar? Assumed yes.",
+      "architecture.md still needs the architect to apply the m1 changes listed in my reply, and ipc-contract.md needs the M1 command detail."
+    ],
+    "gate_round": 1
+  }
 }

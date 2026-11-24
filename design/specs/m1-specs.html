@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Increment 1 specs</title>
+<style>
+  :root {
+    --bg: #faf9f6; --fg: #22211f; --muted: #6b6760; --line: #e2ded6;
+    --code-bg: #f0ede6; --accent: #b8860b; --link: #2b5fab;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1918; --fg: #e8e5df; --muted: #9a958c; --line: #34322f;
+      --code-bg: #262422; --accent: #e0b44c; --link: #8ab4f8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .layout {
+    display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px;
+    max-width: 1120px; margin: 0 auto; padding: 48px 24px 96px;
+  }
+  .layout.no-nav { grid-template-columns: minmax(0, 1fr); max-width: 808px; }
+  nav { position: sticky; top: 32px; align-self: start; font-size: 14px; }
+  nav .label {
+    text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  nav ol { list-style: none; margin: 0; padding: 0; }
+  nav li { margin: 2px 0; }
+  nav a {
+    display: block; padding: 3px 0 3px 10px; border-left: 2px solid var(--line);
+    color: var(--muted); text-decoration: none;
+  }
+  nav a:hover { color: var(--fg); border-left-color: var(--accent); }
+  main { max-width: 760px; min-width: 0; }
+  .meta { color: var(--muted); font-size: 13px; margin: 0 0 8px; }
+  h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 16px; letter-spacing: -0.01em; }
+  h2 { font-size: 1.35rem; margin: 48px 0 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  h3 { font-size: 1.08rem; margin: 28px 0 8px; }
+  a { color: var(--link); }
+  code {
+    font: 0.88em/1.4 ui-monospace, "Cascadia Code", Consolas, monospace;
+    background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere;
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px;
+    padding: 14px 16px; overflow-x: auto; font-size: 13.5px; line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+  .table-wrap { overflow-x: auto; margin: 20px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  ul, ol { padding-left: 1.3em; }
+  li { margin: 6px 0; }
+  blockquote { border-left: 3px solid var(--accent); margin: 16px 0; padding: 4px 0 4px 16px; color: var(--muted); }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 32px 0; }
+  strong { font-weight: 650; }
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: 1fr; gap: 24px; padding: 32px 16px 64px; }
+    nav { position: static; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <div class="label">Contents</div>
+  <ol>
+    <li><a href="#intro-summary">Summary</a></li>
+    <li><a href="#intro-open-questions">Open questions</a></li>
+    <li><a href="#intro-based-on">Based on</a></li>
+    <li><a href="#d0-m1-foundation-test-gate-fixtures-harness-shell-hardening">M1 — Foundation: test gate, fixtures, harness, shell hardening</a></li>
+    <li><a href="#d1-m1-file-io-open-save-encoding-line-endings">M1 — File I/O: open, save, encoding, line endings</a></li>
+    <li><a href="#d2-m1-native-menu-recent-files-dirty-state-guard">M1 — Native menu, Recent files, dirty-state guard</a></li>
+    <li><a href="#d3-m1-editor-pane-and-status-bar">M1 — Editor pane and status bar</a></li>
+    <li><a href="#d4-m1-live-preview-parse-swagger-ui-react">M1 — Live preview (parse + swagger-ui-react)</a></li>
+    <li><a href="#d5-m1-schema-validation-with-bundled-openapi-schemas">M1 — Schema validation with bundled OpenAPI schemas</a></li>
+  </ol>
+</nav>
+<main>
+<p class="meta">6 documents</p>
+<h1>Increment 1 specs</h1>
+<p><strong>Goal:</strong> Increment 1 — A working split view. Deliver: Tauri 2.x shell launching on Windows, file menu (Open/Save/Save As/Recent/Close via native dialogs), Monaco editor loading OpenAPI 3.0/3.1 YAML+JSON (language auto-detected from extension with UI override), debounced parse (200ms) updating a swagger-ui-react view with 'Try it out' disabled, last-good view retained on parse errors, schema validation on by default via monaco-yaml against the OpenAPI 3.1 schema cached in app_data_dir, red squiggles for violations, Save preserving line endings and encoding. No reader file, no copy-context command, no terminal — those are Increment 2 and 3. Perf: open Petstore 3.1 in &lt;200ms; 10k-line spec responsive during Monaco highlight; keystroke-to-preview p95 &lt;250ms. See product-brief.md for the full brief, architecture.md for lanes, ipc-contract.md for the IPC starting point. The GitHub repo is at https://github.com/BIoodHound/apicoord and already has an initial scaffold commit — do NOT force-push or re-init; commits land as fast-forwards on main.</p>
+<h2 id="intro-summary">Summary</h2>
+<p>Six m1 specs (foundation, file-io, menu-lifecycle, editor, preview, validation) already existed and match the council decision, so I left them unchanged. The architecture.md update was blocked because product-manager does not own that file. The proposed content is in my reply for the architect to apply: Rust-owned file I/O, menu and MRU; frontend-owned buffer, parse worker, preview and validation; no network; strict CSP; the new module map; the fixed test gate; the keystroke-to-preview data flow; and M1 IPC commands and events. ipc-contract.md was not re-checked against the new commands.</p>
+<h2 id="intro-open-questions">Open questions</h2>
+<ol>
+<li>Drop the remote schema fetch and copy the bundled 3.0 and 3.1 schemas into app_data_dir on first run (leaning, no network code), or keep a reqwest fetch with a bundled fallback? The brief and your goal asked for fetch-and-cache.</li>
+<li>Windows performance verification: a manual QA run on a Windows laptop recorded in the increment report (leaning), or add a Windows CI runner?</li>
+<li>If big-10k.yaml misses 250ms p95: report the miss and ship with a longer debounce above 5,000 lines (leaning), or hold the increment?</li>
+<li>Save As on an unedited buffer: write the original bytes (assumed) or re-encode?</li>
+<li>Does the session-only language override survive Save As? Assumed yes, and it resets when another file opens.</li>
+<li>Mixed-EOL file after an edit: save with the majority EOL and show a status-bar note only (assumed), or prompt first?</li>
+<li>Show encoding and EOL in the status bar? Assumed yes.</li>
+<li>architecture.md still needs the architect to apply the m1 changes listed in my reply, and ipc-contract.md needs the M1 command detail.</li>
+</ol>
+<h2 id="intro-based-on">Based on</h2>
+<ul>
+<li><a href="../../../../studio/research/INDEX.md">INDEX</a></li>
+<li><a href="../../../../studio/research/cached-remote-schema-offline.md">cached-remote-schema-offline</a></li>
+<li><a href="../../../../studio/research/latency-budgets-desktop-ui.md">latency-budgets-desktop-ui</a></li>
+<li><a href="../../../../studio/research/monaco-in-tauri.md">monaco-in-tauri</a></li>
+<li><a href="../../../../studio/research/native-file-menu-recent-files.md">native-file-menu-recent-files</a></li>
+<li><a href="../../../../studio/research/swagger-ui-react-embed.md">swagger-ui-react-embed</a></li>
+<li><a href="../../../../studio/research/tauri-capabilities.md">tauri-capabilities</a></li>
+<li><a href="../../../../studio/research/tauri-ipc-patterns.md">tauri-ipc-patterns</a></li>
+<li><a href="../../../../studio/research/text-file-roundtrip.md">text-file-roundtrip</a></li>
+<li><a href="../council/m1/decision.html">Design council decision record</a></li>
+</ul>
+<h2 id="d0-m1-foundation-test-gate-fixtures-harness-shell-hardening">M1 — Foundation: test gate, fixtures, harness, shell hardening</h2>
+<p><strong>Research:</strong> <code>tauri-capabilities.md</code>, <code>monaco-in-tauri.md</code>, <code>swagger-ui-react-embed.md</code>. <strong>Decision:</strong> council m1 #1, #10, #11, rule 15.</p>
+<h3 id="d0-goal">Goal</h3>
+<p>Make a green test run mean something and give every later task fixtures, a timing harness and a locked-down shell to build on.</p>
+<h3 id="d0-user-visible-behaviour">User-visible behaviour</h3>
+<p>The app launches on Windows into an empty split window (editor left, preview right, status bar bottom). Nothing else is visible yet.</p>
+<h3 id="d0-api-shape">API shape</h3>
+<p>None new. <code>ping</code> stays. Capabilities and CSP per <code>architecture.md</code>.</p>
+<h3 id="d0-data">Data</h3>
+<p>Fixtures under <code>tests/fixtures/</code>:</p>
+<ul>
+<li><code>petstore-3.0.yaml</code>, <code>petstore-3.1.yaml</code></li>
+<li><code>big-10k.yaml</code> (generated, ≥10,000 lines, valid 3.1; generator script committed)</li>
+<li>EOL/encoding: <code>eol-lf.yaml</code>, <code>eol-crlf.yaml</code>, <code>eol-mixed.yaml</code> (majority CRLF), <code>utf8-bom.yaml</code>, <code>utf16le.yaml</code>, <code>no-final-newline.yaml</code></li>
+<li><code>non-object.yaml</code> (a bare list), <code>invalid-on-open.yaml</code> (syntax error), <code>schema-invalid.yaml</code> (parses, violates schema), <code>legacy-latin1.yaml</code></li>
+</ul>
+<h3 id="d0-acceptance-criteria">Acceptance criteria</h3>
+<ul>
+<li>T0: <code>cargo test --manifest-path src-tauri/Cargo.toml</code> and <code>npm test -- --run</code> run from the project root, and CI/orchestrator config points at them; each runs ≥1 real test.</li>
+<li>T0: a build with the pinned <code>react</code>/<code>react-dom</code> and <code>swagger-ui-react</code> succeeds; the working version range is recorded in <code>architecture.md</code>.</li>
+<li>T0: <code>plugin-fs</code> is absent from <code>Cargo.toml</code>, <code>package.json</code> and capabilities; <code>tauri.conf.json</code> has a strict CSP (no <code>csp: null</code>) and the webview has no <code>http:*</code>/<code>fs:*</code> permission.</li>
+<li>T0b: all fixtures above exist and a test asserts their key properties (e.g. <code>eol-mixed</code> has both <code>\r\n</code> and lone <code>\n</code>; <code>big-10k</code> ≥10,000 lines).</li>
+<li>T0b: a timing harness records <code>ks</code>→<code>commit</code> marks and prints p50/p95 for Petstore and <code>big-10k</code> separately.</li>
+<li>Spikes (written up in the task result, ≤10 lines each): (a) does a native-menu accelerator for Ctrl+S fire while Monaco has focus in WebView2; (b) does 3.1 <code>$dynamicRef</code> produce squiggles in monaco-yaml on <code>schema-invalid.yaml</code>; (c) does the strict CSP break swagger-ui or Monaco.</li>
+<li>No feature task starts before T0 and T0b are done.</li>
+</ul>
+<h3 id="d0-non-goals">Non-goals</h3>
+<p>Windows CI runner; perf gating in CI.</p>
+<h3 id="d0-open-questions-for-the-operator">Open questions for the operator</h3>
+<ul>
+<li>Windows perf verification: manual run by QA (leaning) vs Windows CI runner (later).</li>
+<li>If <code>big-10k</code> misses 250ms p95: report and ship with a longer debounce above a line threshold (leaning) vs hold.</li>
+</ul>
+<p class="meta">From m1-foundation.md</p>
+<h2 id="d1-m1-file-io-open-save-encoding-line-endings">M1 — File I/O: open, save, encoding, line endings</h2>
+<p><strong>Research:</strong> <code>text-file-roundtrip.md</code>, <code>tauri-ipc-patterns.md</code>, <code>tauri-capabilities.md</code>. <strong>Decision:</strong> council m1 #2, #10, rules 8, 9, 12.</p>
+<h3 id="d1-goal">Goal</h3>
+<p>Open and save local spec files from Rust so that an unedited file round-trips byte-identically and an edited one keeps its encoding, BOM and line endings.</p>
+<h3 id="d1-user-visible-behaviour">User-visible behaviour</h3>
+<ul>
+<li>Open picks a <code>.yaml/.yml/.json</code> file (filter is a hint only) and the text appears in the editor. The status bar shows <code>UTF-8</code>, <code>LF</code>/<code>CRLF</code> (and <code>BOM</code> when present).</li>
+<li>Save with no edits leaves the file's bytes untouched. Save after edits writes the buffer with the file's original encoding, BOM, and the <strong>majority EOL</strong> (ties → LF). A mixed-EOL file shows a one-time status-bar note "Mixed line endings: saving as CRLF".</li>
+<li>A new/untitled buffer would default to UTF-8, no BOM, LF — but M1 has no New command, so this only applies to Save As of a buffer opened from disk (inherits its metadata).</li>
+<li>A legacy-encoded file (not UTF-8/UTF-16 with BOM) is refused with: "This file isn't UTF-8 or UTF-16 and can't be opened safely."</li>
+<li>Save failure (locked file, no permission) shows an error and leaves the buffer dirty.</li>
+</ul>
+<h3 id="d1-api-shape-detail-in-ipc-contractmd">API shape (detail in <code>ipc-contract.md</code>)</h3>
+<ul>
+<li><code>open_spec_dialog() -&gt; Option&lt;OpenedSpec&gt;</code>; <code>open_recent(path) -&gt; OpenedSpec</code></li>
+<li><code>save_spec(text, clean: bool) -&gt; SaveResult</code>; <code>save_spec_as(text, clean: bool) -&gt; Option&lt;SaveResult&gt;</code> (Rust shows the save dialog)</li>
+<li><code>OpenedSpec { path, text, encoding, hasBom, eol, majorityEol, mixedEol, openapiVersion }</code> — <code>text</code> has BOM stripped; Monaco's EOL is set to the detected one.</li>
+<li>Errors: <code>unsupported_encoding</code>, <code>not_issued</code>, <code>io_error</code>, <code>locked</code>.</li>
+</ul>
+<h3 id="d1-data">Data</h3>
+<p>Files only. <code>AppState.issued_paths</code> allow-list. Text codec: UTF-8, UTF-16LE/BE (hand-written encode in <code>textcodec.rs</code>; <code>encoding_rs</code> cannot encode UTF-16).</p>
+<h3 id="d1-acceptance-criteria">Acceptance criteria</h3>
+<ul>
+<li>Open→Save-without-edit→compare: bytes identical for every EOL/encoding fixture (LF, CRLF, mixed, UTF-8 BOM, UTF-16LE, no-final-newline).</li>
+<li>Open→edit→save: UTF-16LE file stays UTF-16LE with BOM; UTF-8 BOM stays; no-final-newline stays without one; CRLF file stays CRLF; mixed file saves with its majority EOL.</li>
+<li>Save As of a clean (unedited) buffer writes the original bytes to the new path (operator Q4; leaning accepted).</li>
+<li><code>legacy-latin1.yaml</code> returns <code>unsupported_encoding</code>; no partial state is set.</li>
+<li>Writes are atomic: temp file in same directory then rename; a simulated rename failure leaves the original intact; lock errors retry 5×50ms then return <code>locked</code>.</li>
+<li>A command given a path Rust never issued (not a dialog result, current doc or MRU entry) returns <code>not_issued</code> and touches no file.</li>
+<li>Open of a 10k-line file returns in &lt;100ms in Rust (measured in a Rust test on dev hardware, informational).</li>
+<li>After successful Save As the current path and Recent list update; the window title shows the new file name.</li>
+<li>Frontend never imports <code>@tauri-apps/plugin-fs</code> (lint/grep test).</li>
+</ul>
+<h3 id="d1-non-goals">Non-goals</h3>
+<p>Legacy codec support; preserving mixed EOLs; autosave (brief lists it for v1 but not M1); file watching; creating new files.</p>
+<h3 id="d1-open-questions-for-the-operator">Open questions for the operator</h3>
+<ul>
+<li>Save As on an unedited buffer: original bytes (assumed) vs re-encode.</li>
+<li>Mixed-EOL after edit: no prompt, status-bar note only (assumed).</li>
+<li>Show encoding and EOL in the status bar (assumed yes).</li>
+</ul>
+<p class="meta">From m1-file-io.md</p>
+<h2 id="d2-m1-native-menu-recent-files-dirty-state-guard">M1 — Native menu, Recent files, dirty-state guard</h2>
+<p><strong>Research:</strong> <code>native-file-menu-recent-files.md</code>, <code>tauri-capabilities.md</code>, <code>tauri-ipc-patterns.md</code>. <strong>Decision:</strong> council m1 #6, #7, #8, rules 10, 11, 14.</p>
+<h3 id="d2-goal">Goal</h3>
+<p>File menu with Open, Save, Save As, Recent (last 5) and Close, using native dialogs, and no way to lose unsaved edits by accident.</p>
+<h3 id="d2-user-visible-behaviour">User-visible behaviour</h3>
+<ul>
+<li>Native <strong>File</strong> menu: Open… (Ctrl+O), Save (Ctrl+S), Save As… (Ctrl+Shift+S), Recent ▸ (up to 5, most recent first), Close (Ctrl+W), Exit.</li>
+<li>Save/Save As/Close are disabled when no document is open.</li>
+<li>Picking a Recent entry opens it. If the file is missing, it is removed from the list and a notice says "<name> no longer exists".</li>
+<li>If the buffer is dirty, Close, Open, Recent and closing the window all show Save / Don't Save / Cancel. Save then proceeds (and aborts the action if the save fails or is cancelled); Cancel aborts.</li>
+<li>The title bar shows <code>name — APICoord</code>, with <code>•</code> prefix when dirty.</li>
+<li>Ctrl+S has <strong>one owner</strong>: if spike (a) in <code>m1-foundation</code> shows the menu accelerator fires in Monaco, the menu owns it and Monaco binds nothing; otherwise Monaco's <code>addCommand</code> owns it and the menu shows "Ctrl+S" as a label only. Same rule for Ctrl+O/W/Shift+S.</li>
+</ul>
+<h3 id="d2-api-shape">API shape</h3>
+<ul>
+<li><code>list_recent() -&gt; RecentEntry[]</code>; event <code>recent://changed</code>; event <code>menu://action {id}</code>.</li>
+<li>All opening/saving goes through <code>m1-file-io</code> commands. Window close uses <code>onCloseRequested</code> → <code>confirmDiscardIfDirty()</code>.</li>
+</ul>
+<h3 id="d2-data">Data</h3>
+<p><code>app_data_dir/recent.json</code>: array of ≤5 <code>{path, lastOpened}</code>; normalised paths (case-fold, strip <code>\\?\</code>, UNC) before de-dup; move-to-front; write atomically; corrupt file → empty list.</p>
+<h3 id="d2-acceptance-criteria">Acceptance criteria</h3>
+<ul>
+<li>Open, Save, Save As, Recent, Close each work from the menu; Save As updates path and Recent.</li>
+<li>Recent holds exactly 5 after 6 distinct opens; opening <code>C:\a.yaml</code> then <code>c:\A.YAML</code> yields one entry.</li>
+<li>Recent survives an app restart and entries reopen successfully (via Rust command, not fs scope).</li>
+<li>Missing Recent file is removed and a notice shown.</li>
+<li>A single Ctrl+S press causes exactly one <code>save_spec</code> call (QA test).</li>
+<li>With a dirty buffer, each of Close / Open / Recent / window-close shows the three-way prompt; Cancel leaves the buffer and file unchanged; Don't Save discards; Save writes then proceeds.</li>
+<li>With a clean buffer none of them prompt.</li>
+</ul>
+<h3 id="d2-non-goals">Non-goals</h3>
+<p>Pinned files; Clear Recent; autosave; multi-window; drag-and-drop open. <strong>Cut order:</strong> if scope slips, the native Recent submenu may fall back to an in-webview Recent list for M1 (council #8) — the behaviours above still apply.</p>
+<h3 id="d2-open-questions-for-the-operator">Open questions for the operator</h3>
+<p>None new (see <code>m1-file-io</code>, <code>m1-foundation</code>).</p>
+<p class="meta">From m1-menu-lifecycle.md</p>
+<h2 id="d3-m1-editor-pane-and-status-bar">M1 — Editor pane and status bar</h2>
+<p><strong>Research:</strong> <code>monaco-in-tauri.md</code>, <code>text-file-roundtrip.md</code>. <strong>Decision:</strong> council m1 #9, #11, rule 5. <strong>Departure:</strong> <code>monaco-in-tauri.md</code> suggests <code>vite-plugin-monaco-editor-esm</code> and <code>enableSchemaRequest</code>; the council rejected both (barely maintained / needs HTTP). We use <code>?worker</code> imports and local <code>monaco-editor</code>.</p>
+<h3 id="d3-goal">Goal</h3>
+<p>A fast Monaco editor with correct language mode, offline, and a status bar that tells the truth about the document.</p>
+<h3 id="d3-user-visible-behaviour">User-visible behaviour</h3>
+<ul>
+<li>Left pane is Monaco (lazy-loaded; a "loading editor…" placeholder shows until ready). Right pane is the preview. Draggable splitter, default 50/50.</li>
+<li>Language: <code>.yaml</code>/<code>.yml</code> → YAML, <code>.json</code> → JSON. Any other extension: first non-blank character <code>{</code> → JSON, else YAML.</li>
+<li>Status bar (left→right): language dropdown (YAML/JSON), encoding (+BOM), EOL, preview status (<code>m1-preview</code>), marker count ("3 problems"), cursor <code>Ln, Col</code>.</li>
+<li>Language override is <strong>session-only</strong>, does not change saved bytes, survives Save As, and resets when another file is opened. Switching it re-runs parse and schema binding in one step without recreating the model (undo history and markers are kept).</li>
+<li>Dirty marker appears on first edit and clears on save or when text returns to the saved text.</li>
+<li>Theme follows system light/dark.</li>
+</ul>
+<h3 id="d3-api-shape">API shape</h3>
+<p>None (frontend only; consumes <code>OpenedSpec</code>).</p>
+<h3 id="d3-data">Data</h3>
+<p>Store <code>document</code> slice; no persistence.</p>
+<h3 id="d3-acceptance-criteria">Acceptance criteria</h3>
+<ul>
+<li>Monaco loads with no network (test with network blocked; no jsDelivr request).</li>
+<li>Workers load in both <code>tauri dev</code> and the packaged build: syntax highlighting works and a schema squiggle appears.</li>
+<li>Extension detection table above passes, including an extensionless file starting with <code>{</code> (JSON) and one starting with <code>openapi:</code> (YAML).</li>
+<li>Override YAML→JSON on a YAML buffer changes the mode and triggers exactly one re-parse; model identity and undo stack are preserved.</li>
+<li>Opening <code>big-10k.yaml</code>: UI stays responsive (a typed key echoes within 100ms while highlighting finishes) — manual on Windows.</li>
+<li>Open Petstore 3.1 → editor text visible in &lt;200ms from file chosen (manual on Windows, recorded).</li>
+<li>Status bar shows correct encoding/EOL for each fixture.</li>
+</ul>
+<h3 id="d3-non-goals">Non-goals</h3>
+<p>Persisted override; settings UI; minimap/theme options; jump-to-line from preview (Increment 2); find in preview.</p>
+<h3 id="d3-open-questions-for-the-operator">Open questions for the operator</h3>
+<p>None new.</p>
+<p class="meta">From m1-editor.md</p>
+<h2 id="d4-m1-live-preview-parse-swagger-ui-react">M1 — Live preview (parse + swagger-ui-react)</h2>
+<p><strong>Research:</strong> <code>swagger-ui-react-embed.md</code>, <code>tauri-capabilities.md</code>. <strong>Decision:</strong> council m1 #4, #5, #10, rules 1–4, 13. <strong>Departures:</strong> the brief says parse errors show an inline toast; the council chose a persistent stale badge (a toast flashes at 200ms debounce and vanishes while the preview is still stale). The research brief's "render only the visible tag section" fallback is not built (no precedent; revisit only if the harness shows a miss).</p>
+<h3 id="d4-goal">Goal</h3>
+<p>Show a live Swagger-style view of the spec that follows typing within budget and never goes blank or crashes mid-edit.</p>
+<h3 id="d4-user-visible-behaviour">User-visible behaviour</h3>
+<ul>
+<li>200ms after the last keystroke the buffer is parsed and the preview updates.</li>
+<li>Preview has no "Try it out" and no "Authorize" send ability; <code>supportedSubmitMethods: []</code>. <code>docExpansion: "list"</code>.</li>
+<li><strong>Parse error:</strong> preview keeps the last good render and a badge on the preview pane reads "Preview is out of date — line 12: <message>" (persistent until fixed); Monaco shows a squiggle at the error. Fixing it clears the badge and updates the preview.</li>
+<li><strong>Non-object document</strong> (empty, scalar, list) counts as a parse error.</li>
+<li><strong>Invalid on first open</strong> (no last-good): the pane shows "Fix the syntax error to see a preview" plus the line/message.</li>
+<li><strong>Schema violations</strong> never freeze or blank the preview; they only squiggle (<code>m1-validation</code>).</li>
+<li>A comment-only or whitespace-only edit does not re-render swagger.</li>
+<li>External <code>$ref</code>s are not resolved; swagger shows its usual unresolved-ref message.</li>
+</ul>
+<h3 id="d4-api-shape">API shape</h3>
+<p>None. Worker protocol: in <code>{seq, text, language}</code>, out <code>{seq, ok:true, hash, json}</code> or <code>{seq, ok:false, line, message}</code>.</p>
+<h3 id="d4-data">Data</h3>
+<p>Store: <code>previewStatus: ok | stale{line,msg} | empty-invalid</code>, <code>spec</code>, <code>specHash</code>, <code>lastSeq</code>.</p>
+<h3 id="d4-tuning-numbers">Tuning numbers</h3>
+<p>Debounce 200ms; hash = fast non-crypto hash of <code>JSON.stringify(json)</code>; fallback (only if harness misses): debounce 400ms when buffer &gt;5,000 lines.</p>
+<h3 id="d4-acceptance-criteria">Acceptance criteria</h3>
+<ul>
+<li>Valid edit to a summary appears in the preview within 250ms p95 of the last keystroke on Petstore (measured by harness marks; Windows manual run recorded).</li>
+<li>Same measurement is recorded separately for <code>big-10k.yaml</code>; a miss is reported, not hidden.</li>
+<li><code>invalid-on-open.yaml</code>: <code>previewStatus = empty-invalid</code>, message with line shown, no swagger mounted.</li>
+<li>Typing a syntax error after a good render: <code>previewStatus = stale</code>, last render still in DOM, badge text has the line number; fixing it → <code>ok</code>.</li>
+<li><code>non-object.yaml</code> → treated as parse error; swagger never receives a non-object (no crash).</li>
+<li>Out-of-order worker replies: a reply with <code>seq</code> older than the newest shown is discarded (unit test with delayed replies).</li>
+<li>Parsed hash unchanged → <code>setSpec</code> not called (unit test: comment-only edit).</li>
+<li><code>schema-invalid.yaml</code> renders (<code>previewStatus = ok</code>) and has markers.</li>
+<li>"Try it out" button absent from the DOM; CSP blocks outbound requests from the webview.</li>
+<li>Swagger-ui and the worker load lazily (not in the initial bundle).</li>
+</ul>
+<h3 id="d4-non-goals">Non-goals</h3>
+<p>Click-to-jump (Increment 2); virtualised/partial rendering; swagger "Models" tweaks beyond <code>defaultModelsExpandDepth</code> default; external ref resolution; a toast on errors.</p>
+<h3 id="d4-open-questions-for-the-operator">Open questions for the operator</h3>
+<ul>
+<li>If <code>big-10k</code> misses 250ms p95: report and ship with the fallback (leaning) vs hold.</li>
+<li>Research flagged that worker structured-clone cost is unmeasured; the harness decides whether the worker stays.</li>
+</ul>
+<p class="meta">From m1-preview.md</p>
+<h2 id="d5-m1-schema-validation-with-bundled-openapi-schemas">M1 — Schema validation with bundled OpenAPI schemas</h2>
+<p><strong>Research:</strong> <code>cached-remote-schema-offline.md</code>, <code>monaco-in-tauri.md</code>, <code>tauri-capabilities.md</code>. <strong>Decision:</strong> council m1 #3, rules 6, 7. <strong>Departures (need operator sign-off):</strong> the brief and the operator goal say "fetch 3.1 schema once, cache in <code>app_data_dir</code>" and validate against 3.1. The council cut the network fetch (frozen 2022 snapshot; avoids reqwest/TLS/cache-corruption/toggle) and bundles both 3.0 and 3.1, copied to <code>app_data_dir/schemas/</code> on first run. The research brief's <code>enableSchemaRequest</code> + <code>http:default</code> setup is rejected.</p>
+<h3 id="d5-goal">Goal</h3>
+<p>Red squiggles for spec violations, offline, against the right OpenAPI schema version, on by default.</p>
+<h3 id="d5-user-visible-behaviour">User-visible behaviour</h3>
+<ul>
+<li>Validation is on by default. Violations show red squiggles with hover messages; the status bar shows the problem count.</li>
+<li>A 3.0.x file validates against the 3.0 schema; a 3.1.x file against 3.1. A file with a missing/unknown <code>openapi:</code> value validates against 3.1 and gets the schema's own error on that field.</li>
+<li>Syntax errors squiggle as well (Monaco/monaco-yaml parse diagnostics); typing a syntax error shows a squiggle within 300ms and fixing it clears it.</li>
+<li>Works for YAML (monaco-yaml) and JSON (<code>jsonDefaults</code>). Switching language override rebinds the schema.</li>
+<li>No network is touched at any point.</li>
+</ul>
+<h3 id="d5-api-shape">API shape</h3>
+<p><code>get_schema(version: "3.0" | "3.1") -&gt; String</code> (schema JSON text, from <code>app_data_dir/schemas/</code> or bundled fallback). <code>OpenedSpec.openapiVersion</code> is sniffed in Rust from the <code>openapi:</code> field.</p>
+<h3 id="d5-data">Data</h3>
+<p><code>app_data_dir/schemas/oas-3.0.json</code>, <code>oas-3.1.json</code> (copied from resources on first run; JSON-parse checked on every read, fall back to bundled on corruption, rewrite copy).</p>
+<h3 id="d5-tuning-numbers">Tuning numbers</h3>
+<p>Squiggle latency target &lt;300ms after typing stops (brief acceptance). No extra debounce beyond monaco-yaml's own.</p>
+<h3 id="d5-acceptance-criteria">Acceptance criteria</h3>
+<ul>
+<li><code>petstore-3.0.yaml</code> shows 0 markers; <code>petstore-3.1.yaml</code> shows 0 markers; a 3.0 file never gets a line-1 "3.1" version error.</li>
+<li><code>schema-invalid.yaml</code> shows ≥1 marker at the offending line (also in the 3.1 spike for <code>$dynamicRef</code>; if gaps exist, list them in Known limitations).</li>
+<li>Syntax error → squiggle &lt;300ms; fix → cleared.</li>
+<li>Schema passed inline; webview makes no HTTP request and has no <code>http:*</code> capability (test asserts capability files).</li>
+<li>Deleting/corrupting <code>app_data_dir/schemas/*</code> → app still validates (fallback) and restores the copy.</li>
+<li>Validation works in dev and packaged builds.</li>
+</ul>
+<h3 id="d5-non-goals">Non-goals</h3>
+<p>Remote fetch/refresh; settings toggle to disable (nothing to disable in M1); custom user schemas; autocomplete beyond what monaco-yaml gives for free; reader-file warnings (Increment 2); linting rules beyond the schema.</p>
+<h3 id="d5-open-questions-for-the-operator">Open questions for the operator</h3>
+<ul>
+<li>Drop the remote schema fetch (Option A, assumed) vs keep a <code>reqwest</code> fetch with bundled fallback (B)?</li>
+</ul>
+<p class="meta">From m1-validation.md</p>
+</main>
+</div>
+</body>
+</html>
