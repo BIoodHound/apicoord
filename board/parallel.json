@@ -1,0 +1,202 @@
+{
+  "tasks": {
+    "T001": {
+      "depends_on": [],
+      "touches": [
+        "projects/apicoord/design/architecture.md",
+        "projects/apicoord/design/ipc-contract.md"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T002": {
+      "depends_on": [
+        "T001"
+      ],
+      "touches": [
+        "projects/apicoord/package-lock.json",
+        "projects/apicoord/package.json",
+        "projects/apicoord/src-tauri/Cargo.toml",
+        "projects/apicoord/src-tauri/capabilities/default.json",
+        "projects/apicoord/src-tauri/capabilities/window-lifecycle.json",
+        "projects/apicoord/src-tauri/core/Cargo.toml",
+        "projects/apicoord/src-tauri/resources/schemas/oas-3.0.json",
+        "projects/apicoord/src-tauri/resources/schemas/oas-3.1.json",
+        "projects/apicoord/src-tauri/tauri.conf.json",
+        "projects/apicoord/tsconfig.json",
+        "projects/apicoord/vite.config.ts"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T003": {
+      "depends_on": [
+        "T002"
+      ],
+      "touches": [
+        "projects/apicoord/src-tauri/core/src/error.rs",
+        "projects/apicoord/src-tauri/core/src/lib.rs",
+        "projects/apicoord/src-tauri/src/commands/app.rs",
+        "projects/apicoord/src-tauri/src/commands/mod.rs",
+        "projects/apicoord/src-tauri/src/error.rs",
+        "projects/apicoord/src-tauri/src/lib.rs",
+        "projects/apicoord/src-tauri/src/state.rs"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T004": {
+      "depends_on": [
+        "T002"
+      ],
+      "touches": [
+        "projects/apicoord/src/ipc/client.ts",
+        "projects/apicoord/src/ipc/types.ts",
+        "projects/apicoord/src/lib/fileActions.ts",
+        "projects/apicoord/src/lib/perf.ts",
+        "projects/apicoord/src/store/index.ts",
+        "projects/apicoord/src/workers/parseProtocol.ts"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T005": {
+      "depends_on": [
+        "T002",
+        "T004"
+      ],
+      "touches": [
+        "projects/apicoord/src/spikes/RESULTS.md"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T006": {
+      "depends_on": [
+        "T003"
+      ],
+      "touches": [
+        "projects/apicoord/src-tauri/core/src/encoding.rs",
+        "projects/apicoord/src-tauri/core/src/fileio.rs",
+        "projects/apicoord/src-tauri/core/src/lib.rs",
+        "projects/apicoord/src-tauri/src/commands/file.rs",
+        "projects/apicoord/src-tauri/src/commands/mod.rs",
+        "projects/apicoord/src-tauri/src/state.rs"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T007": {
+      "depends_on": [
+        "T003",
+        "T006"
+      ],
+      "touches": [
+        "projects/apicoord/src-tauri/core/src/recent.rs",
+        "projects/apicoord/src-tauri/src/commands/app.rs",
+        "projects/apicoord/src-tauri/src/commands/file.rs",
+        "projects/apicoord/src-tauri/src/lib.rs",
+        "projects/apicoord/src-tauri/src/menu.rs",
+        "projects/apicoord/src-tauri/src/state.rs"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T008": {
+      "depends_on": [
+        "T003"
+      ],
+      "touches": [
+        "projects/apicoord/src-tauri/core/src/lib.rs",
+        "projects/apicoord/src-tauri/core/src/schema.rs",
+        "projects/apicoord/src-tauri/src/commands/app.rs"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T009": {
+      "depends_on": [
+        "T004",
+        "T005"
+      ],
+      "touches": [
+        "projects/apicoord/src/editor/EditorPane.tsx",
+        "projects/apicoord/src/editor/language.ts",
+        "projects/apicoord/src/editor/monacoSetup.ts",
+        "projects/apicoord/src/store/index.ts"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T010": {
+      "depends_on": [
+        "T004",
+        "T009"
+      ],
+      "touches": [
+        "projects/apicoord/src/lib/perf.ts",
+        "projects/apicoord/src/preview/PreviewPane.tsx",
+        "projects/apicoord/src/preview/useParsedSpec.ts",
+        "projects/apicoord/src/workers/parse.worker.ts"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T011": {
+      "depends_on": [
+        "T005",
+        "T008",
+        "T009"
+      ],
+      "touches": [
+        "projects/apicoord/src/editor/monacoSetup.ts",
+        "projects/apicoord/src/editor/validation.ts",
+        "projects/apicoord/src/ipc/client.ts"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T012": {
+      "depends_on": [
+        "T004",
+        "T005",
+        "T006",
+        "T007",
+        "T009"
+      ],
+      "touches": [
+        "projects/apicoord/src/App.tsx",
+        "projects/apicoord/src/lib/fileActions.ts",
+        "projects/apicoord/src/lib/shortcuts.ts",
+        "projects/apicoord/src/store/index.ts"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T013": {
+      "depends_on": [
+        "T006",
+        "T009",
+        "T012"
+      ],
+      "touches": [
+        "projects/apicoord/src/App.tsx",
+        "projects/apicoord/src/components/StatusBar.tsx"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    },
+    "T014": {
+      "depends_on": [
+        "T002"
+      ],
+      "touches": [
+        "projects/apicoord/SANDBOX.md",
+        "projects/apicoord/release/MANUAL_QA.md",
+        "projects/apicoord/release/WINDOWS_BUILD.md"
+      ],
+      "source": "product-manager",
+      "predicted_before_done": true
+    }
+  }
+}

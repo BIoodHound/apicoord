@@ -5,14 +5,21 @@
   "bugs": [],
   "usage_cap": null,
   "pause_requested": false,
-  "next_task": 1,
+  "next_task": 15,
   "next_bug": 1,
   "milestone": {
     "id": 1,
     "goal": "Increment 1 \u2014 A working split view. Deliver: Tauri 2.x shell launching on Windows, file menu (Open/Save/Save As/Recent/Close via native dialogs), Monaco editor loading OpenAPI 3.0/3.1 YAML+JSON (language auto-detected from extension with UI override), debounced parse (200ms) updating a swagger-ui-react view with 'Try it out' disabled, last-good view retained on parse errors, schema validation on by default via monaco-yaml against the OpenAPI 3.1 schema cached in app_data_dir, red squiggles for violations, Save preserving line endings and encoding. No reader file, no copy-context command, no terminal \u2014 those are Increment 2 and 3. Perf: open Petstore 3.1 in <200ms; 10k-line spec responsive during Monaco highlight; keystroke-to-preview p95 <250ms. See product-brief.md for the full brief, architecture.md for lanes, ipc-contract.md for the IPC starting point. The GitHub repo is at https://github.com/BIoodHound/apicoord and already has an initial scaffold commit \u2014 do NOT force-push or re-init; commits land as fast-forwards on main.",
-    "phase": "awaiting_spec_approval",
+    "phase": "building",
     "started": "2026-11-24T11:35:21",
-    "director_notes": [],
+    "director_notes": [
+      {
+        "time": "2026-11-24T15:31:47",
+        "phase": "awaiting_spec_approval",
+        "verdict": "approve",
+        "notes": "1: bundled schemas; drop remote fetch. 2: manual QA on Windows; no CI runner this increment. 3: hold the increment if we miss p95 <250ms \u2014 no silent degradation. 4: Save As writes original bytes for an unedited buffer. 5: session-only language override persists across Save As, resets on open-other. 6: mixed-EOL \u2192 save with majority EOL + status-bar note, no prompt. 7: yes, show encoding and EOL in the status bar. Procedural: architect applies m1 changes to architecture.md and fills ipc-contract.md as the first task of the build."
+      }
+    ],
     "specs": [
       "projects/apicoord/design/specs/m1-foundation.md",
       "projects/apicoord/design/specs/m1-file-io.md",
@@ -21,16 +28,357 @@
       "projects/apicoord/design/specs/m1-preview.md",
       "projects/apicoord/design/specs/m1-validation.md"
     ],
-    "tasks": [],
+    "tasks": [
+      {
+        "id": "T001",
+        "title": "Replace ipc-contract.md with architecture.md \u00a75 and apply m1 design notes",
+        "owner": "architect",
+        "description": "First build task (operator procedural note). Copy architecture.md \u00a75 verbatim into design/ipc-contract.md (9 commands, 2 events, {code,message} errors, allow-list rule: only open_recent takes a path). Confirm architecture.md reflects m1 decisions (bundled schemas, no remote fetch).",
+        "spec": "projects/apicoord/design/specs/m1-foundation.md",
+        "acceptance": [
+          "ipc-contract.md matches architecture.md \u00a75 verbatim",
+          "Contract lists exactly 9 commands and 2 events",
+          "Only open_recent accepts a path argument",
+          "architecture.md has no remote schema fetch"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/design/ipc-contract.md"
+        ]
+      },
+      {
+        "id": "T002",
+        "title": "T0: project config, Cargo workspace, CSP, capabilities, vendored schemas",
+        "owner": "architect",
+        "description": "Apply \u00a79.1\u20139.5: remove plugin-fs/plugin-dialog JS packages; pin monaco-editor ~0.54, monaco-yaml ~5.5.1, swagger-ui-react ~5.36, React 18.3; strict CSP; capabilities narrowed to core:default, set-title, window-destroy plus window-lifecycle.json; Cargo workspace with apicoord-core; vendor oas-3.0.json and oas-3.1.json with recorded sha256; add typecheck script; run npm install and commit package-lock.json.",
+        "spec": "projects/apicoord/design/specs/m1-foundation.md",
+        "acceptance": [
+          "npm install succeeds and package-lock.json is committed",
+          "npm run typecheck runs",
+          "cargo test --manifest-path src-tauri/Cargo.toml runs at least one test",
+          "npm test -- --run runs at least one test",
+          "Webview permissions are only core:default, set-title, window-destroy",
+          "CSP is strict with no remote origins",
+          "Vendored schema sha256 values match \u00a79.5"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/package.json",
+          "projects/apicoord/package-lock.json",
+          "projects/apicoord/tsconfig.json",
+          "projects/apicoord/vite.config.ts",
+          "projects/apicoord/src-tauri/Cargo.toml",
+          "projects/apicoord/src-tauri/core/Cargo.toml",
+          "projects/apicoord/src-tauri/tauri.conf.json",
+          "projects/apicoord/src-tauri/capabilities/default.json",
+          "projects/apicoord/src-tauri/capabilities/window-lifecycle.json",
+          "projects/apicoord/src-tauri/resources/schemas/oas-3.0.json",
+          "projects/apicoord/src-tauri/resources/schemas/oas-3.1.json"
+        ]
+      },
+      {
+        "id": "T003",
+        "title": "T0: Rust skeletons (state, lib wiring, core modules, error type, ping)",
+        "owner": "backend-dev",
+        "description": "Create \u00a712 skeletons: state.rs, lib.rs wiring, apicoord-core module list, core/src/error.rs ({code,message}), src/error.rs re-export, commands/app.rs with ping and stubs for the other commands.",
+        "spec": "projects/apicoord/design/specs/m1-foundation.md",
+        "acceptance": [
+          "cargo test passes",
+          "ping command returns ok over IPC",
+          "Errors serialize as {code,message}",
+          "All 9 commands registered in lib.rs"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/src-tauri/src/lib.rs",
+          "projects/apicoord/src-tauri/src/state.rs",
+          "projects/apicoord/src-tauri/src/error.rs",
+          "projects/apicoord/src-tauri/src/commands/mod.rs",
+          "projects/apicoord/src-tauri/src/commands/app.rs",
+          "projects/apicoord/src-tauri/core/src/lib.rs",
+          "projects/apicoord/src-tauri/core/src/error.rs"
+        ]
+      },
+      {
+        "id": "T004",
+        "title": "T0: TS skeletons (IPC types, store, fileActions, parse protocol, perf marks)",
+        "owner": "frontend-dev",
+        "description": "Create src/ipc/types.ts from \u00a75.3, typed invoke wrappers, Zustand store skeleton, fileActions skeleton, parse worker message protocol types, and perf marks apicoord:ks / apicoord:commit helpers.",
+        "spec": "projects/apicoord/design/specs/m1-foundation.md",
+        "acceptance": [
+          "npm run typecheck passes",
+          "IPC types match ipc-contract.md",
+          "Perf mark helpers emit apicoord:ks and apicoord:commit",
+          "At least one vitest passes"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/src/ipc/types.ts",
+          "projects/apicoord/src/ipc/client.ts",
+          "projects/apicoord/src/store/index.ts",
+          "projects/apicoord/src/lib/fileActions.ts",
+          "projects/apicoord/src/lib/perf.ts",
+          "projects/apicoord/src/workers/parseProtocol.ts"
+        ]
+      },
+      {
+        "id": "T005",
+        "title": "Spikes: menu accelerator vs Monaco focus, monaco-yaml with 3.1 $dynamicRef, strict CSP",
+        "owner": "frontend-dev",
+        "description": "Run spikes (a) accelerator vs Monaco focus in WebView2, (b) monaco-yaml with OpenAPI 3.1 $dynamicRef, (c) strict CSP vs swagger-ui and Monaco. Record results in src/spikes/RESULTS.md. Results decide \u00a77 shortcut ownership and confirm the \u00a79.3 CSP; any CSP change is reported to the architect.",
+        "spec": "projects/apicoord/design/specs/m1-editor.md",
+        "acceptance": [
+          "Each spike has a recorded pass/fail with evidence",
+          "Shortcut owner for each of Open/Save/Save As/Close is stated, one owner each",
+          "monaco-yaml 3.1 behaviour documented",
+          "CSP confirmed or required change listed"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/src/spikes/RESULTS.md"
+        ]
+      },
+      {
+        "id": "T006",
+        "title": "File I/O core: open, save, save as, encoding and EOL preservation",
+        "owner": "backend-dev",
+        "description": "Implement open_spec_dialog, save_spec, save_spec_as in apicoord-core and commands. Detect encoding (UTF-8/BOM/UTF-16) and EOL, keep original bytes. Unedited buffer: Save and Save As write original bytes. Edited mixed-EOL: save with majority EOL, return a note flag for the status bar. No prompts. Native dialogs via Rust.",
+        "spec": "projects/apicoord/design/specs/m1-file-io.md",
+        "acceptance": [
+          "Open returns text, encoding, EOL and mixed-EOL flag",
+          "Unedited Save and Save As produce byte-identical files",
+          "Edited CRLF file saves as CRLF; LF as LF",
+          "Edited mixed-EOL file saves with majority EOL and returns the note flag, no prompt",
+          "BOM and UTF-16 round-trip preserved",
+          "Save As to a new path updates the document path",
+          "Errors use {code,message}"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/src-tauri/core/src/fileio.rs",
+          "projects/apicoord/src-tauri/core/src/encoding.rs",
+          "projects/apicoord/src-tauri/core/src/lib.rs",
+          "projects/apicoord/src-tauri/src/commands/file.rs",
+          "projects/apicoord/src-tauri/src/commands/mod.rs",
+          "projects/apicoord/src-tauri/src/state.rs"
+        ]
+      },
+      {
+        "id": "T007",
+        "title": "Recent files, menu, close_document and exit lifecycle",
+        "owner": "backend-dev",
+        "description": "Implement native File menu (Open/Save/Save As/Recent/Close/Exit), menu://action and recent://changed events, open_recent (only path-taking command, validated against the recent list), list_recent persisted in app_data_dir, close_document, exit_app with dirty handling.",
+        "spec": "projects/apicoord/design/specs/m1-menu-lifecycle.md",
+        "acceptance": [
+          "File menu has Open, Save, Save As, Recent, Close",
+          "Menu clicks emit menu://action with the action id",
+          "Recent list is capped, de-duplicated, most-recent first and persisted",
+          "recent://changed fires on list change",
+          "open_recent rejects a path not in the recent list",
+          "close_document clears state",
+          "exit_app exits the process"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/src-tauri/src/menu.rs",
+          "projects/apicoord/src-tauri/core/src/recent.rs",
+          "projects/apicoord/src-tauri/src/commands/app.rs",
+          "projects/apicoord/src-tauri/src/commands/file.rs",
+          "projects/apicoord/src-tauri/src/lib.rs",
+          "projects/apicoord/src-tauri/src/state.rs"
+        ]
+      },
+      {
+        "id": "T008",
+        "title": "get_schema command serving bundled OpenAPI schemas",
+        "owner": "backend-dev",
+        "description": "Implement get_schema returning the bundled oas-3.0/3.1 JSON. Copy the bundled schemas into app_data_dir on first run and verify sha256. No network code.",
+        "spec": "projects/apicoord/design/specs/m1-validation.md",
+        "acceptance": [
+          "get_schema returns 3.0 and 3.1 schemas",
+          "Schemas are copied to app_data_dir on first run and re-copied if the hash mismatches",
+          "No network crate or call is added",
+          "Unknown version returns a {code,message} error"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/src-tauri/core/src/schema.rs",
+          "projects/apicoord/src-tauri/src/commands/app.rs",
+          "projects/apicoord/src-tauri/core/src/lib.rs"
+        ]
+      },
+      {
+        "id": "T009",
+        "title": "Monaco editor, language auto-detect and session-only override",
+        "owner": "frontend-dev",
+        "description": "Monaco editor loading YAML and JSON with worker setup compatible with the CSP. Language from extension (.yaml/.yml/.json). A UI override that is session-only, persists across Save As and resets when another file opens. Highlighting stays responsive on a 10k-line spec.",
+        "spec": "projects/apicoord/design/specs/m1-editor.md",
+        "acceptance": [
+          "Opening .yaml/.yml selects YAML and .json selects JSON",
+          "Override selector changes language",
+          "Override persists across Save As",
+          "Override resets on opening another file",
+          "10k-line spec is typeable during highlight",
+          "Open Petstore 3.1 in under 200ms"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/src/editor/EditorPane.tsx",
+          "projects/apicoord/src/editor/language.ts",
+          "projects/apicoord/src/editor/monacoSetup.ts",
+          "projects/apicoord/src/store/index.ts"
+        ]
+      },
+      {
+        "id": "T010",
+        "title": "Debounced parse worker and swagger-ui-react preview",
+        "owner": "frontend-dev",
+        "description": "Parse in a worker 200ms after the last keystroke, feeding swagger-ui-react with Try it out disabled. On a parse error keep the last good view and show a non-blocking error indicator. Emit apicoord:ks and apicoord:commit marks.",
+        "spec": "projects/apicoord/design/specs/m1-preview.md",
+        "acceptance": [
+          "Parse fires 200ms after the last edit",
+          "Preview renders Petstore 3.0 and 3.1, YAML and JSON",
+          "Try it out is disabled",
+          "Invalid text retains the last good preview and shows an error indicator",
+          "Keystroke-to-preview p95 is under 250ms on a release build, and a miss holds the increment",
+          "10k-line spec stays responsive during typing"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/src/preview/PreviewPane.tsx",
+          "projects/apicoord/src/workers/parse.worker.ts",
+          "projects/apicoord/src/preview/useParsedSpec.ts",
+          "projects/apicoord/src/lib/perf.ts"
+        ]
+      },
+      {
+        "id": "T011",
+        "title": "Schema validation with monaco-yaml and red squiggles",
+        "owner": "frontend-dev",
+        "description": "Fetch the schema via get_schema and configure monaco-yaml against OpenAPI 3.1, using 3.0 when the document declares 3.0. On by default. Violations show as red squiggles. Apply the spike (b) findings, including a JSON-mode equivalent.",
+        "spec": "projects/apicoord/design/specs/m1-validation.md",
+        "acceptance": [
+          "Validation is on by default",
+          "A schema violation shows a red squiggle with a message",
+          "Valid Petstore 3.1 shows no markers",
+          "The schema comes from get_schema with no network request",
+          "JSON files are validated too",
+          "Validation does not break the 200ms preview budget"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/src/editor/validation.ts",
+          "projects/apicoord/src/editor/monacoSetup.ts",
+          "projects/apicoord/src/ipc/client.ts"
+        ]
+      },
+      {
+        "id": "T012",
+        "title": "Wire file actions, menu events, shortcuts, recent list and dirty handling",
+        "owner": "frontend-dev",
+        "description": "Connect menu://action and recent://changed to fileActions (open, open_recent, save, save_as, close). Implement shortcuts per the spike (a) owner decision. Window title and dirty marker via set-title. Close and exit with unsaved changes follow the spec.",
+        "spec": "projects/apicoord/design/specs/m1-menu-lifecycle.md",
+        "acceptance": [
+          "Each menu action triggers the matching command",
+          "Shortcuts work with Monaco focused and have a single owner",
+          "Recent submenu updates on recent://changed",
+          "Title shows file name and a dirty marker",
+          "Close resets editor and preview",
+          "Only open_recent sends a path to the backend"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/src/lib/fileActions.ts",
+          "projects/apicoord/src/App.tsx",
+          "projects/apicoord/src/lib/shortcuts.ts",
+          "projects/apicoord/src/store/index.ts"
+        ]
+      },
+      {
+        "id": "T013",
+        "title": "Status bar showing encoding, EOL and mixed-EOL note",
+        "owner": "frontend-dev",
+        "description": "Status bar showing the document's encoding, EOL, language and the active override. After a save that normalised mixed line endings, show a transient note naming the majority EOL used. No dialog.",
+        "spec": "projects/apicoord/design/specs/m1-file-io.md",
+        "acceptance": [
+          "Status bar shows encoding and EOL for the open file",
+          "Updates after open and Save As",
+          "Mixed-EOL save shows a note with the majority EOL and no prompt",
+          "Status bar shows the language and whether an override is active"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": [],
+        "ownership_gaps": [
+          "projects/apicoord/src/components/StatusBar.tsx",
+          "projects/apicoord/src/App.tsx"
+        ]
+      },
+      {
+        "id": "T014",
+        "title": "Windows release build and manual QA runbook (no CI runner)",
+        "owner": "release-engineer",
+        "description": "Write a tauri build release procedure for Windows, a manual QA checklist (open/save, line endings, language override, validation, last-good, perf with the timing harness), and the git procedure: fast-forward commits to main on BIoodHound/apicoord with no force-push or re-init. Add no CI workflow this increment.",
+        "spec": "projects/apicoord/design/specs/m1-foundation.md",
+        "acceptance": [
+          "The runbook builds a Windows release binary from a clean checkout",
+          "Checklist covers every acceptance area of the m1 specs",
+          "Perf gate stated: p95 under 250ms for Petstore and big-10k, a miss holds the increment",
+          "Git section forbids force-push and re-init",
+          "No .github workflow is added"
+        ],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [],
+        "reviews": []
+      }
+    ],
     "bugs": [],
-    "cost_usd": 2.3522,
+    "cost_usd": 5.6246,
     "summary": null,
     "design_notes": null,
     "tokens": {
-      "input": 92,
-      "output": 62747,
-      "cache_read": 444850,
-      "cache_write": 246774
+      "input": 180,
+      "output": 142454,
+      "cache_read": 1848379,
+      "cache_write": 433646
     },
     "research": [
       "studio/research/INDEX.md",
@@ -72,6 +420,24 @@
       "Show encoding and EOL in the status bar? Assumed yes.",
       "architecture.md still needs the architect to apply the m1 changes listed in my reply, and ipc-contract.md needs the M1 command detail."
     ],
-    "gate_round": 1
+    "gate_round": 1,
+    "gate_reviews": [
+      "awaiting_spec_approval:1"
+    ],
+    "planning": {
+      "fix_round": false,
+      "feedback": "1: bundled schemas; drop remote fetch. 2: manual QA on Windows; no CI runner this increment. 3: hold the increment if we miss p95 <250ms \u2014 no silent degradation. 4: Save As writes original bytes for an unedited buffer. 5: session-only language override persists across Save As, resets on open-other. 6: mixed-EOL \u2192 save with majority EOL + status-bar note, no prompt. 7: yes, show encoding and EOL in the status bar. Procedural: architect applies m1 changes to architecture.md and fills ipc-contract.md as the first task of the build."
+    },
+    "architecture_done": true,
+    "architecture_notes": "Applied the increment's design to architecture.md (the procedural first build task). \u00a75 is now the complete, authoritative IPC contract: 9 commands (ping, open_spec_dialog, open_recent, save_spec, save_spec_as, close_document, list_recent, get_schema, exit_app in commands/app.rs), 2 events (menu://action, recent://changed), {code,message} errors, and an allow-list rule where only open_recent takes a path. Webview permissions are only core:default, set-title and window-destroy. Doc terms map as: scene tree = React tree (\u00a73), autoloads = singletons (\u00a74), signals = Tauri commands/events (\u00a75), physics layers = trust boundaries (\u00a78), input actions = shortcuts with one owner each, decided by spike (a) (\u00a77). There is no event-bus library (D17): Tauri events cross the process boundary and the Zustand store is the in-webview bus. Skeletons for state.rs, lib.rs wiring, the core module list, fileActions, the parse protocol and perf marks are written in \u00a712 for T0 to create as-is, because the ownership hook (B2) blocks the architect from ipc-contract.md, package.json, tsconfig, vite.config, Cargo.toml, tauri.conf.json, capabilities and src/. Test run: all gates fail for environment reasons, so no code was tested. mvn fails on the missing backend/ dir, vitest is not found because node_modules is absent (B4), and cargo is not installed (B3). The correct gate (D18) is cargo test --manifest-path src-tauri/Cargo.toml plus npm test -- --run plus npm run typecheck from the project root.",
+    "suggested_core_tasks": [
+      "Orchestrator/operator: run apicoord with PIPELINE_STACK=rust-tauri+ts-react and re-map the architect lane to package.json, tsconfig.json, vite.config.ts, src-tauri/Cargo.toml, src-tauri/core/Cargo.toml, tauri.conf.json, capabilities/*, src-tauri/src/lib.rs, design/ipc-contract.md (B1, B2)",
+      "Operator: install rustup plus Tauri Linux prerequisites on the gate host (B3)",
+      "Replace design/ipc-contract.md with architecture.md \u00a75 verbatim (D16)",
+      "T0: apply the config changes in \u00a79.1\u20139.5 as written (remove plugin-fs and plugin-dialog JS packages, pin monaco-editor ~0.54/monaco-yaml ~5.5.1/swagger-ui-react ~5.36/React 18.3, strict CSP, narrowed capabilities plus window-lifecycle.json, Cargo workspace with apicoord-core), run npm install, commit package-lock.json, and confirm the gate commands from D18 run at least one test each",
+      "T0: create the \u00a712 skeletons plus core/src/error.rs and src/ipc/types.ts from \u00a75.3, replace src-tauri/src/error.rs with a re-export, and vendor oas-3.0.json/oas-3.1.json with the sha256 values recorded in \u00a79.5",
+      "T0b (QA): fixtures, plus a timing harness built on apicoord:ks/apicoord:commit marks that measures a tauri build release binary on Windows; p95 under 250ms is a hard gate for both Petstore and big-10k",
+      "Spikes (a) menu accelerator vs Monaco focus in WebView2, (b) monaco-yaml with 3.1 $dynamicRef, (c) strict CSP vs swagger-ui/Monaco. Results decide \u00a77 shortcut ownership and confirm the \u00a79.3 CSP"
+    ]
   }
 }
