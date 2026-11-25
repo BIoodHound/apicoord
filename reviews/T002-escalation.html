@@ -85,7 +85,7 @@
 <main>
 <p class="meta">Generated from T002-escalation.md</p>
 <h1 id="t002-escalated-t0-project-config-cargo-workspace-csp-capabilities-vendored-schemas">T002 escalated: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</h1>
-<p>Owner: architect · attempts: 3 · written 2026-11-24 21:19</p>
+<p>Owner: architect · attempts: 3 · written 2026-11-25 15:32</p>
 <h2 id="what-was-asked">What was asked</h2>
 <p>Apply §9.1–9.5: remove plugin-fs/plugin-dialog JS packages; pin monaco-editor ~0.54, monaco-yaml ~5.5.1, swagger-ui-react ~5.36, React 18.3; strict CSP; capabilities narrowed to core:default, set-title, window-destroy plus window-lifecycle.json; Cargo workspace with apicoord-core; vendor oas-3.0.json and oas-3.1.json with recorded sha256; add typecheck script; run npm install and commit package-lock.json.</p>
 <ul>
@@ -99,26 +99,20 @@
 </ul>
 <h2 id="why-it-was-rejected-last">Why it was rejected last</h2>
 <ul>
-<li>ESCALATE: attempt 3 of 3 exhausted; 0/7 criteria met. Do not re-dispatch T002 until the operator decides B1-B4 in reviews/T002-escalation.md</li>
-<li>B2 (root cause): the ownership hook uses a Spring lane map on a Tauri repo and blocks every T002 deliverable for architect and QA. Operator must either re-map the lanes to the architecture.md §2 table or authorize the orchestrator to apply architecture.md §0.2 steps 1-10 verbatim</li>
-<li>B1: PIPELINE_STACK must be set to rust-tauri+ts-react; the configured gate cds into backend/ and frontend/, which don't exist</li>
-<li>B3: cargo/rustup is not installed on the host; install it or accept C3 as <code>cargo test -p apicoord-core</code></li>
-<li>B4: npm install (with network access) must be run by T0's owner or the orchestrator, and package-lock.json committed</li>
-<li>Place QA's three gate test files from bugs/t002-qa-lane-blocked-gate-tests-undeliverable.md under tests/task_t002/ (the task text wrongly says that folder already exists)</li>
-<li>Orchestration: attempts 2 and 3 were dispatched despite the review's do-not-dispatch line; hold tasks whose review says so until the operator decides</li>
+<li>You changed files you don't own: worktrees/apicoord/t002/tsconfig.tsbuildinfo. Revert those changes and describe what you need from their owner in your summary instead.</li>
 </ul>
 <h2 id="worth-knowing">Worth knowing</h2>
 <ul>
 <li>The plan had architect change files it doesn't own: projects/apicoord/package.json, projects/apicoord/package-lock.json, projects/apicoord/tsconfig.json, projects/apicoord/vite.config.ts, projects/apicoord/src-tauri/Cargo.toml, projects/apicoord/src-tauri/core/Cargo.toml, projects/apicoord/src-tauri/tauri.conf.json, projects/apicoord/src-tauri/capabilities/default.json, projects/apicoord/src-tauri/capabilities/window-lifecycle.json, projects/apicoord/src-tauri/resources/schemas/oas-3.0.json, projects/apicoord/src-tauri/resources/schemas/oas-3.1.json. If that's what blocked it, widen <code>owns:</code> in .claude/agents/architect.md or give the task to another owner, then retry.</li>
+<li>The acceptance-review gate failed 3 time(s). The agent's last words are in the history below.</li>
 </ul>
 <h2 id="where-the-work-is">Where the work is</h2>
-<p>branch <code>task/t002</code> of projects/apicoord, commit 7682845. Its tests: projects/apicoord/tests/task_t002.</p>
+<p>branch <code>task/t002</code> of projects/apicoord, commit 1842c7d. Its tests: projects/apicoord/tests/task_t002.</p>
 <h2 id="the-agents-assumptions">The agent's assumptions</h2>
 <ul>
-<li>The hook's lane map is unchanged since attempts 1-2 (confirmed by a rejected Write on package.json), so all T002 deliverables are outside my writable set</li>
-<li>Writing deliverables via shell redirection would bypass the ownership hook and is not acceptable</li>
-<li>The orchestrator or a re-mapped lane will apply §0.2; schemas must be fetched with curl -o (byte-exact), not retyped</li>
-<li>http://ipc.localhost in connect-src is required by Tauri on Windows and is not a remote origin</li>
+<li>package-lock.json belongs to the orchestrator/T0 lane, not the architect, as the rejection notes say</li>
+<li>Moving tsBuildInfoFile into gitignored node_modules/.tmp is an acceptable way to keep <code>tsc -b</code> from producing a tracked artifact; this file is in the architect's tsconfig lane</li>
+<li>lib.rs, src-tauri/core/** and tests/** are outside the current architect lane (the hook rejected them in attempt 4)</li>
 </ul>
 <h2 id="reviews">Reviews</h2>
 <ul>
@@ -161,6 +155,22 @@
 <li>21:18 <strong>auditor</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
 <li>21:19 <strong>auditor</strong> end: done</li>
 <li>last words: "T002 has failed its last attempt, so it is escalated to you. None of the 7 acceptance criteria are met and no attempts remain. Don't send it out again until you decide B1–B4 in <code>T002-escalation.md</code>."</li>
+<li>15:25 <strong>architect-desktop</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>15:30 <strong>architect-desktop</strong> violation: changed worktrees/apicoord/t002/package-lock.json without owning it</li>
+<li>15:30 <strong>architect-desktop</strong> end: done</li>
+<li>last words: "T002 is only partly done: my config changes are in, but three steps still need other owners. Until they land, every <code>cargo</code> command in <code>src-tauri</code> fails and QA's 11 tests don't exist in the worktree."</li>
+<li>15:30 <strong>orchestrator</strong> gate: T002 failed the acceptance-review gate; back to architect</li>
+<li>15:30 <strong>architect-desktop</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>15:31 <strong>architect-desktop</strong> violation: changed worktrees/apicoord/t002/package-lock.json without owning it</li>
+<li>15:31 <strong>architect-desktop</strong> violation: changed worktrees/apicoord/t002/tsconfig.tsbuildinfo without owning it</li>
+<li>15:31 <strong>architect-desktop</strong> end: done</li>
+<li>last words: "I've reverted the lockfile and the rest of my owned config is in place. The gate is not green yet: the ownership hook blocks me from the core crate, the schemas, <code>lib.rs</code> and the lockfile, so other lanes have to make those changes."</li>
+<li>15:31 <strong>orchestrator</strong> gate: T002 failed the acceptance-review gate; back to architect</li>
+<li>15:31 <strong>architect-desktop</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>15:32 <strong>architect-desktop</strong> violation: changed worktrees/apicoord/t002/tsconfig.tsbuildinfo without owning it</li>
+<li>15:32 <strong>architect-desktop</strong> end: done</li>
+<li>last words: "I fixed the problem that got the last attempt rejected, but T002 is still not done. Four of the seven acceptance criteria need files I'm not allowed to write."</li>
+<li>15:32 <strong>orchestrator</strong> gate: T002 failed the acceptance-review gate; back to architect</li>
 </ul>
 <h2 id="your-call">Your call</h2>
 <ul>

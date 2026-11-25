@@ -137,17 +137,10 @@
           "CSP is strict with no remote origins",
           "Vendored schema sha256 values match \u00a79.5"
         ],
-        "status": "todo",
-        "attempts": 0,
+        "status": "escalated",
+        "attempts": 3,
         "last_issues": [
-          "ESCALATE: attempt 3 of 3 exhausted; 0/7 criteria met. Do not re-dispatch T002 until the operator decides B1-B4 in reviews/T002-escalation.md",
-          "B2 (root cause): the ownership hook uses a Spring lane map on a Tauri repo and blocks every T002 deliverable for architect and QA. Operator must either re-map the lanes to the architecture.md \u00a72 table or authorize the orchestrator to apply architecture.md \u00a70.2 steps 1-10 verbatim",
-          "B1: PIPELINE_STACK must be set to rust-tauri+ts-react; the configured gate cds into backend/ and frontend/, which don't exist",
-          "B3: cargo/rustup is not installed on the host; install it or accept C3 as `cargo test -p apicoord-core`",
-          "B4: npm install (with network access) must be run by T0's owner or the orchestrator, and package-lock.json committed",
-          "Place QA's three gate test files from bugs/t002-qa-lane-blocked-gate-tests-undeliverable.md under tests/task_t002/ (the task text wrongly says that folder already exists)",
-          "Orchestration: attempts 2 and 3 were dispatched despite the review's do-not-dispatch line; hold tasks whose review says so until the operator decides",
-          "The Operator sent this task back to you with this note: Same lane-map fix as T001. architect-desktop now owns package.json, Cargo.toml, tauri.conf.json, capabilities/**, etc. Cargo is on PATH. npm install is a legitimate T0 deliverable per the updated architect-desktop prompt. Ready to apply \u00a79.1-9.5."
+          "You changed files you don't own: worktrees/apicoord/t002/tsconfig.tsbuildinfo. Revert those changes and describe what you need from their owner in your summary instead."
         ],
         "reviews": [
           "projects/apicoord/reviews/T002-attempt1.md",
@@ -229,10 +222,9 @@
         ],
         "test_count": 0,
         "assumptions": [
-          "The hook's lane map is unchanged since attempts 1-2 (confirmed by a rejected Write on package.json), so all T002 deliverables are outside my writable set",
-          "Writing deliverables via shell redirection would bypass the ownership hook and is not acceptable",
-          "The orchestrator or a re-mapped lane will apply \u00a70.2; schemas must be fetched with curl -o (byte-exact), not retyped",
-          "http://ipc.localhost in connect-src is required by Tauri on Windows and is not a remote origin"
+          "package-lock.json belongs to the orchestrator/T0 lane, not the architect, as the rejection notes say",
+          "Moving tsBuildInfoFile into gitignored node_modules/.tmp is an acceptable way to keep `tsc -b` from producing a tracked artifact; this file is in the architect's tsconfig lane",
+          "lib.rs, src-tauri/core/** and tests/** are outside the current architect lane (the hook rejected them in attempt 4)"
         ],
         "disputed_tests": [],
         "escalation_note": "projects/apicoord/reviews/T002-escalation.md",
@@ -266,8 +258,8 @@
           "Errors serialize as {code,message}",
           "All 9 commands registered in lib.rs"
         ],
-        "status": "todo",
-        "attempts": 0,
+        "status": "in_progress",
+        "attempts": 1,
         "last_issues": [],
         "reviews": [],
         "ownership_gaps": [
@@ -278,7 +270,36 @@
           "projects/apicoord/src-tauri/src/commands/app.rs",
           "projects/apicoord/src-tauri/core/src/lib.rs",
           "projects/apicoord/src-tauri/core/src/error.rs"
-        ]
+        ],
+        "checkpoint": {
+          "attempt": 1
+        },
+        "tests_written": true,
+        "test_dir": "projects/apicoord/tests/task_t003",
+        "test_contract": "src-tauri/src/lib.rs: tauri::generate_handler![commands::health::ping, commands::file::{open_spec_dialog,open_recent,save_spec,save_spec_as,close_document}, commands::recent::list_recent, commands::schema::get_schema, commands::app::exit_app] (exactly 9), tauri_plugin_dialog::init(), no tauri_plugin_fs. Each command is `#[tauri::command] pub [async] fn <name>` in src-tauri/src/commands/{health,file,recent,schema,app}.rs; ping returns \"ok\". src-tauri/core/src/error.rs: `#[serde(tag = \"code\", content = \"message\", rename_all = \"snake_case\")] pub enum AppError { UnsupportedEncoding(String), NotIssued(String), NotFound(String), NoDocument(String), Locked(String), IoError(String), Internal(String) }` with Display = message; src-tauri/src/error.rs does `pub use apicoord_core::error::...` and defines no enum AppError. src-tauri/core/src/lib.rs: pub mod error, models, textcodec, eol, doc, mru, paths, fsx, schemas, sniff. src-tauri/core/Cargo.toml: name = \"apicoord-core\", no tauri/encoding_rs/reqwest/hyper/ureq deps. src-tauri/Cargo.toml: [workspace] with default-members including \"core\", `apicoord-core = { path = \"core\" }`, no tauri-plugin-fs. src-tauri/src/state.rs: `pub struct Session`, `pub type SessionState = Mutex<Session>`.",
+        "test_plan": [
+          {
+            "criterion": 1,
+            "coverage": "automated",
+            "test": "src-tauri is a workspace with core as default member; core has no tauri/network deps; state.rs has Session"
+          },
+          {
+            "criterion": 2,
+            "coverage": "manual",
+            "test": "ping_returns_ok_over_ipc (inline in BUG-006; needs tauri 'test' feature + webkit2gtk host)"
+          },
+          {
+            "criterion": 3,
+            "coverage": "automated",
+            "test": "core/src/error.rs declares the adjacently-tagged snake_case AppError with all 7 codes (+ every_app_error_variant_serialises_as_code_and_message_object inline in BUG-006)"
+          },
+          {
+            "criterion": 4,
+            "coverage": "automated",
+            "test": "lib.rs generate_handler! lists exactly the nine \u00a75.1 commands; each registered name is a #[tauri::command] fn in commands/<module>.rs"
+          }
+        ],
+        "test_count": 0
       },
       {
         "id": "T004",
@@ -292,8 +313,8 @@
           "Perf mark helpers emit apicoord:ks and apicoord:commit",
           "At least one vitest passes"
         ],
-        "status": "todo",
-        "attempts": 0,
+        "status": "in_progress",
+        "attempts": 1,
         "last_issues": [],
         "reviews": [],
         "ownership_gaps": [
@@ -303,7 +324,56 @@
           "projects/apicoord/src/lib/fileActions.ts",
           "projects/apicoord/src/lib/perf.ts",
           "projects/apicoord/src/workers/parseProtocol.ts"
-        ]
+        ],
+        "checkpoint": {
+          "attempt": 1
+        },
+        "tests_written": true,
+        "test_dir": "projects/apicoord/tests/task_t004",
+        "test_contract": "package.json scripts.typecheck = 'tsc -b' and it passes. src/ipc/types.ts exports every type/interface in the ipc-contract.md \u00a75.3 ts block with identical union literals / field names+optionality, plus `export type MenuAction = 'open'|'save'|'save-as'|'close'|'recent'|'exit'`. Exported functions in src/ipc/{health,file,recent,schema,app}.ts together call invoke from '@tauri-apps/api/core' with exactly: ping, open_spec_dialog, open_recent {path}, save_spec {text, clean}, save_spec_as {text, clean}, close_document, list_recent, get_schema {version}, exit_app; each wrapper rejects with the invoke rejection object ({code, message}) unchanged. src/ipc/events.ts exported functions take a callback and call listen from '@tauri-apps/api/event' for exactly 'menu://action' and 'recent://changed'. src/perf/marks.ts exports markKeystroke() -> performance.mark('apicoord:ks') and markCommit(seq) -> performance.mark('apicoord:commit', {detail:{seq}}), one mark per call. src/state/store.ts exports zustand `useStore` whose initial getState() has doc:null, language 'yaml'|'json', languageOverridden:false, savedVersionId, dirty:false, previewStatus:{kind:'none'}, spec:null, specHash:null, lastSeq, markerCount:0, recent:[], notice:null, cursor. src/features/file/fileActions.ts exports `fileActions` with functions open, openRecent, save, saveAs, close, exit, windowClose, confirmDiscardIfDirty. src/features/preview/protocol.ts exports interface ParseRequest {seq, text, language} and type ParseReply.",
+        "test_plan": [
+          {
+            "criterion": 1,
+            "coverage": "automated",
+            "test": "npm_run_typecheck_is_defined_as_tsc_b_and_passes"
+          },
+          {
+            "criterion": 2,
+            "coverage": "automated",
+            "test": "ipc_types_declare_every_contract_type_with_identical_members"
+          },
+          {
+            "criterion": 2,
+            "coverage": "automated",
+            "test": "ipc_wrappers_invoke_every_contract_command_with_camelcase_args"
+          },
+          {
+            "criterion": 2,
+            "coverage": "automated",
+            "test": "ipc_wrappers_reject_with_the_app_error_object_code_and_message"
+          },
+          {
+            "criterion": 2,
+            "coverage": "automated",
+            "test": "ipc_event_helpers_listen_to_menu_action_and_recent_changed"
+          },
+          {
+            "criterion": 3,
+            "coverage": "automated",
+            "test": "markKeystroke_emits_apicoord_ks_performance_mark"
+          },
+          {
+            "criterion": 3,
+            "coverage": "automated",
+            "test": "markCommit_emits_apicoord_commit_with_seq_detail"
+          },
+          {
+            "criterion": 4,
+            "coverage": "automated",
+            "test": "store_fileActions_and_parse_protocol_skeletons_have_contract_shape"
+          }
+        ],
+        "test_count": 0
       },
       {
         "id": "T005",
@@ -536,10 +606,74 @@
           "Git section forbids force-push and re-init",
           "No .github workflow is added"
         ],
-        "status": "todo",
-        "attempts": 0,
+        "status": "done",
+        "attempts": 1,
         "last_issues": [],
-        "reviews": []
+        "reviews": [
+          "projects/apicoord/reviews/T014-attempt1.md"
+        ],
+        "tests_written": true,
+        "test_dir": "projects/apicoord/tests/task_t014",
+        "test_contract": "Exactly one Markdown file under packaging/ whose name contains 'runbook' (e.g. packaging/RELEASE-RUNBOOK.md). Fenced code blocks contain: git clone ...github.com/BIoodHound/apicoord; npm ci; cargo tauri build | npm run tauri build | npx tauri build (no --debug); cargo test --manifest-path src-tauri/Cargo.toml; npm test -- --run; a --ff-only merge/pull; and no git push -f/--force/+refspec, no git init, no rm/Remove-Item .git, no git reset --hard origin. The prose names: src-tauri/target/release/bundle, MSI, NSIS, rustup, Node, WebView2, MSVC/Visual Studio Build Tools; all 13 m1-foundation fixture file names; m1 area terms (byte-identical, Save As, UTF-16LE, BOM, CRLF, 'mixed line endings', locked/read-only, \"isn't UTF-8 or UTF-16\", override, undo, extensionless/no extension, 'Ln N, Col', light/dark, 'out of date', 'Fix the syntax error to see a preview', 'Try it out', comment-only, squiggle, 300ms, schemas/oas-3.x.json, corrupt/delete, problems, Recent, \"Don't Save\", Cancel, 'no longer exists', restart, Ctrl+S, Ctrl+O, Ctrl+W, Ctrl+Shift+S, 'exactly one'/'once', the \u2022 dirty marker, spike, CSP, offline/no network); at least 25 '- [ ]' items. One paragraph or line holds p95 + 250ms + Petstore + big-10k; another holds miss/fail + hold + increment; apicoord:ks and apicoord:commit are named; the measurement is on the release build/binary; no '400ms' and no 'ship with a longer debounce' fallback. A paragraph or line forbids (never/do not/must not/forbidden) force-push, and another forbids re-init/git init. No *.yml/*.yaml under .github/workflows/.",
+        "test_plan": [
+          {
+            "criterion": 1,
+            "coverage": "automated",
+            "test": "runbook_builds_release_binary_from_clean_checkout"
+          },
+          {
+            "criterion": 1,
+            "coverage": "automated",
+            "test": "runbook_lists_windows_prerequisites_and_runs_gate_before_build"
+          },
+          {
+            "criterion": 1,
+            "coverage": "manual",
+            "test": "execute runbook on clean Windows 10/11 machine; MSI+NSIS produced"
+          },
+          {
+            "criterion": 2,
+            "coverage": "automated",
+            "test": "checklist_uses_every_m1_fixture"
+          },
+          {
+            "criterion": 2,
+            "coverage": "automated",
+            "test": "checklist_covers_each_m1_spec_area"
+          },
+          {
+            "criterion": 3,
+            "coverage": "automated",
+            "test": "perf_gate_p95_under_250ms_for_petstore_and_big10k_and_miss_holds_increment"
+          },
+          {
+            "criterion": 3,
+            "coverage": "automated",
+            "test": "perf_gate_offers_no_debounce_fallback"
+          },
+          {
+            "criterion": 4,
+            "coverage": "automated",
+            "test": "git_section_requires_fast_forward_to_main_and_forbids_force_push_and_reinit"
+          },
+          {
+            "criterion": 4,
+            "coverage": "automated",
+            "test": "runbook_commands_never_force_push_or_reinit"
+          },
+          {
+            "criterion": 5,
+            "coverage": "automated",
+            "test": "no_github_workflow_is_added"
+          }
+        ],
+        "test_count": 0,
+        "assumptions": [
+          "The test file is in frontend/src/__tests__/tasks/task_t014/, not tests/task_t014/ as the task text says.",
+          "Fixtures are referenced at tests/fixtures/, as in the m1-foundation spec, even though they don't exist in this worktree yet.",
+          "Release binary name is apicoord.exe."
+        ],
+        "disputed_tests": []
       }
     ],
     "bugs": [
@@ -584,37 +718,47 @@
         "path": "projects/apicoord/bugs/BUG-005.md"
       }
     ],
-    "cost_usd": 14.4965,
+    "cost_usd": 20.447,
     "cost_by_phase": {
       "building": {
         "architect-desktop": {
-          "cost_usd": 1.2115,
-          "calls": 4,
+          "cost_usd": 3.2208,
+          "calls": 7,
           "tokens": {
-            "input": 62,
-            "output": 16340,
-            "cache_read": 1229540,
-            "cache_write": 79692
+            "input": 142,
+            "output": 49503,
+            "cache_read": 3418665,
+            "cache_write": 193035
           }
         },
         "qa-engineer": {
-          "cost_usd": 0.4898,
-          "calls": 2,
+          "cost_usd": 3.6524,
+          "calls": 6,
           "tokens": {
-            "input": 14,
-            "output": 2968,
-            "cache_read": 279081,
-            "cache_write": 107023
+            "input": 86,
+            "output": 50899,
+            "cache_read": 2258838,
+            "cache_write": 373228
           }
         },
         "auditor": {
-          "cost_usd": 1.0122,
-          "calls": 2,
+          "cost_usd": 1.5558,
+          "calls": 3,
           "tokens": {
-            "input": 22,
-            "output": 7733,
-            "cache_read": 398299,
-            "cache_write": 97115
+            "input": 36,
+            "output": 13462,
+            "cache_read": 665367,
+            "cache_write": 143995
+          }
+        },
+        "packaging-engineer": {
+          "cost_usd": 0.235,
+          "calls": 1,
+          "tokens": {
+            "input": 12,
+            "output": 5137,
+            "cache_read": 198263,
+            "cache_write": 40877
           }
         }
       }
@@ -622,10 +766,10 @@
     "summary": null,
     "design_notes": null,
     "tokens": {
-      "input": 532,
-      "output": 287305,
-      "cache_read": 6416614,
-      "cache_write": 1217570
+      "input": 710,
+      "output": 379265,
+      "cache_read": 11050827,
+      "cache_write": 1684875
     },
     "research": [
       "studio/research/INDEX.md",
