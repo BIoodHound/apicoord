@@ -1,12 +1,12 @@
 {
-  "schema": 1,
+  "schema": 2,
   "increment": null,
   "history": [],
   "bugs": [],
   "usage_cap": null,
   "pause_requested": false,
   "next_task": 15,
-  "next_bug": 1,
+  "next_bug": 5,
   "milestone": {
     "id": 1,
     "goal": "Increment 1 \u2014 A working split view. Deliver: Tauri 2.x shell launching on Windows, file menu (Open/Save/Save As/Recent/Close via native dialogs), Monaco editor loading OpenAPI 3.0/3.1 YAML+JSON (language auto-detected from extension with UI override), debounced parse (200ms) updating a swagger-ui-react view with 'Try it out' disabled, last-good view retained on parse errors, schema validation on by default via monaco-yaml against the OpenAPI 3.1 schema cached in app_data_dir, red squiggles for violations, Save preserving line endings and encoding. No reader file, no copy-context command, no terminal \u2014 those are Increment 2 and 3. Perf: open Petstore 3.1 in <200ms; 10k-line spec responsive during Monaco highlight; keystroke-to-preview p95 <250ms. See product-brief.md for the full brief, architecture.md for lanes, ipc-contract.md for the IPC starting point. The GitHub repo is at https://github.com/BIoodHound/apicoord and already has an initial scaffold commit \u2014 do NOT force-push or re-init; commits land as fast-forwards on main.",
@@ -41,13 +41,85 @@
           "Only open_recent accepts a path argument",
           "architecture.md has no remote schema fetch"
         ],
-        "status": "todo",
-        "attempts": 0,
+        "status": "done",
+        "attempts": 1,
         "last_issues": [],
-        "reviews": [],
+        "reviews": [
+          "projects/apicoord/reviews/T001-attempt1.md",
+          "projects/apicoord/reviews/T001-attempt2.md",
+          "projects/apicoord/reviews/T001-attempt3.md",
+          "projects/apicoord/reviews/T001-attempt1.md"
+        ],
         "ownership_gaps": [
           "projects/apicoord/design/ipc-contract.md"
-        ]
+        ],
+        "tests_written": true,
+        "test_dir": "projects/apicoord/tests/task_t001",
+        "test_contract": "design/ipc-contract.md must contain architecture.md text from the '## 5. ' heading up to (not including) the '## 6. ' heading verbatim (after EOL normalisation and trimming trailing whitespace); a short title or intro above it is allowed; no leftover placeholder tables ('| Command | Args | Returns | Errors | Capability |', 'Add real commands as they're introduced'). Across all markdown tables, first-cell backticked command names must be exactly {ping, open_spec_dialog, open_recent, save_spec, save_spec_as, close_document, list_recent, get_schema, exit_app}, each once; backticked event names exactly {menu://action, recent://changed}. Only the open_recent row's Args cell mentions 'path' and it reads '{ path: string }'. The contract states 'the only command that takes a path is `open_recent`' and 'must already be in `issued`'. architecture.md: every enableSchemaRequest is false, include_str! is present, there is no fetch(, and the only non-localhost URLs start with https://spec.openapis.org/oas/ next to the sentence 'one-time download at authoring time; the app makes no network calls at runtime'.",
+        "test_plan": [
+          {
+            "criterion": 1,
+            "coverage": "automated",
+            "test": "ipc_contract_contains_architecture_section_5_verbatim"
+          },
+          {
+            "criterion": 1,
+            "coverage": "automated",
+            "test": "ipc_contract_has_no_leftover_placeholder_tables"
+          },
+          {
+            "criterion": 2,
+            "coverage": "automated",
+            "test": "contract_lists_exactly_9_commands"
+          },
+          {
+            "criterion": 2,
+            "coverage": "automated",
+            "test": "contract_lists_exactly_2_events"
+          },
+          {
+            "criterion": 3,
+            "coverage": "automated",
+            "test": "only_open_recent_takes_a_path_argument"
+          },
+          {
+            "criterion": 3,
+            "coverage": "automated",
+            "test": "allow_list_rule_is_stated_in_contract"
+          },
+          {
+            "criterion": 4,
+            "coverage": "automated",
+            "test": "architecture_disables_every_schema_request_and_bundles_schemas"
+          },
+          {
+            "criterion": 4,
+            "coverage": "automated",
+            "test": "architecture_remote_urls_are_authoring_time_schema_sources_only"
+          }
+        ],
+        "test_count": 0,
+        "assumptions": [
+          "The current \u00a75 text in architecture.md is the source of truth, including its intro line saying ipc-contract.md mirrors it (copied in T001), which an earlier attempt added.",
+          "I did not run npm install inside the worktree: this task is not T0, and a full install would change package-lock.json. I used a throwaway vitest install in /tmp to run the tests instead.",
+          "Out-of-date B2 mentions elsewhere in architecture.md (\u00a70, D16) are outside this task's acceptance criteria, so I left them unchanged; editing \u00a75 would break the word-for-word match."
+        ],
+        "disputed_tests": [],
+        "escalation_note": "projects/apicoord/reviews/T001-escalation.md",
+        "escalations": [
+          {
+            "time": "2026-11-25T07:21:23",
+            "attempts": 3,
+            "issues": [
+              "ESCALATE (attempt 3/3): design/ipc-contract.md is still the 29-line placeholder; criteria 1-3 fail and criterion 4 passes. The root cause is outside the owner's lane.",
+              "B2: the ownership hook blocks the architect from writing design/ipc-contract.md. The placeholder header names 'architect-desktop' as owner, which points to a role-name mismatch in the ownership map. Fix the map (architect-desktop -> architect) or have the operator/orchestrator do the copy with the awk recipe in reviews/T001-escalation.md.",
+              "B4: node_modules is missing, so the 8 tests in ipc-contract.test.ts have never run in any attempt. Run npm install in worktrees/apicoord/t001/frontend, then `npx vitest run src/__tests__/tasks/task_t001` and require 8/8 with non-empty output before accepting.",
+              "Process: attempt 3 was dispatched without the operator prerequisites from the earlier escalation note. Do not re-dispatch while an escalation note's prerequisites are still open."
+            ],
+            "notes": "Lane map bug fixed: team.py _project_stack() now accepts backtick-wrapped stack: in product-brief. architect now resolves to architect-desktop with Tauri paths including design/ipc-contract.md. Cargo 1.100.0 installed. Ready to deliver the IPC contract copy from architecture.md \u00a75."
+          }
+        ],
+        "earlier_attempts": 3
       },
       {
         "id": "T002",
@@ -66,8 +138,21 @@
         ],
         "status": "todo",
         "attempts": 0,
-        "last_issues": [],
-        "reviews": [],
+        "last_issues": [
+          "ESCALATE: attempt 3 of 3 exhausted; 0/7 criteria met. Do not re-dispatch T002 until the operator decides B1-B4 in reviews/T002-escalation.md",
+          "B2 (root cause): the ownership hook uses a Spring lane map on a Tauri repo and blocks every T002 deliverable for architect and QA. Operator must either re-map the lanes to the architecture.md \u00a72 table or authorize the orchestrator to apply architecture.md \u00a70.2 steps 1-10 verbatim",
+          "B1: PIPELINE_STACK must be set to rust-tauri+ts-react; the configured gate cds into backend/ and frontend/, which don't exist",
+          "B3: cargo/rustup is not installed on the host; install it or accept C3 as `cargo test -p apicoord-core`",
+          "B4: npm install (with network access) must be run by T0's owner or the orchestrator, and package-lock.json committed",
+          "Place QA's three gate test files from bugs/t002-qa-lane-blocked-gate-tests-undeliverable.md under tests/task_t002/ (the task text wrongly says that folder already exists)",
+          "Orchestration: attempts 2 and 3 were dispatched despite the review's do-not-dispatch line; hold tasks whose review says so until the operator decides",
+          "The Operator sent this task back to you with this note: Same lane-map fix as T001. architect-desktop now owns package.json, Cargo.toml, tauri.conf.json, capabilities/**, etc. Cargo is on PATH. npm install is a legitimate T0 deliverable per the updated architect-desktop prompt. Ready to apply \u00a79.1-9.5."
+        ],
+        "reviews": [
+          "projects/apicoord/reviews/T002-attempt1.md",
+          "projects/apicoord/reviews/T002-attempt2.md",
+          "projects/apicoord/reviews/T002-attempt3.md"
+        ],
         "ownership_gaps": [
           "projects/apicoord/package.json",
           "projects/apicoord/package-lock.json",
@@ -80,7 +165,93 @@
           "projects/apicoord/src-tauri/capabilities/window-lifecycle.json",
           "projects/apicoord/src-tauri/resources/schemas/oas-3.0.json",
           "projects/apicoord/src-tauri/resources/schemas/oas-3.1.json"
-        ]
+        ],
+        "tests_written": true,
+        "test_dir": "projects/apicoord/tests/task_t002",
+        "test_contract": "package.json: name 'apicoord', scripts.typecheck='tsc -b', scripts.test starts with 'vitest', deps react/react-dom '~18.3.1', no @tauri-apps/plugin-fs or plugin-dialog; package-lock.json at root with name 'apicoord', root deps equal package.json deps, node_modules entries react/react-dom 18.3.x, monaco-editor 0.54.x, monaco-yaml 5.5.x, swagger-ui-react 5.36.x, @monaco-editor/react 4.7.x, zustand 5.x; tsc -b exits 0; vite.config.ts has worker:{format:'es'} and test.exclude containing 'tests/fixtures/**'; src-tauri/Cargo.toml has [workspace] members=[\"core\"], default-members=[\".\", \"core\"], apicoord-core={path=\"core\"}, no tauri-plugin-fs; src-tauri/src/lib.rs has no tauri_plugin_fs; src-tauri/core/Cargo.toml name='apicoord-core', no tauri/encoding_rs/network crates, serde_json dep; src-tauri/core/tests/ has >=1 .rs file; capabilities: default.json permissions exactly ['core:default','core:window:allow-set-title'], window-lifecycle.json windows ['main'] permissions ['core:window:allow-destroy'], union across all files exactly those three, no fs:/http:/shell:/dialog: strings; no src/**/*.ts(x) imports @tauri-apps/plugin-fs|plugin-dialog; tauri.conf.json app.windows[0].label='main', app.security.csp is an object with default-src, script-src=\"'self'\", connect-src='ipc: http://ipc.localhost', object-src=\"'none'\", base-uri, form-action, frame-src, sources limited to 'self' 'none' data: blob: ipc: http://ipc.localhost and 'unsafe-inline' only in style-src; app.security.devCsp same plus ws://localhost:1420 only in connect-src; src-tauri/core/schemas/oas-3.0.json sha256 7a0db7311a69d8b7f2505f59c5d4cbb58539a0961df0c05724a07538014822cf ($schema draft-04), oas-3.1.json sha256 da01ba28852cac0de53893797cb8d1942bc3b05084f526dcc216717dec314ed0 ($schema 2020-12), all $refs local ('#...').",
+        "test_plan": [
+          {
+            "criterion": 1,
+            "coverage": "automated",
+            "test": "package_lock_is_committed_and_resolves_the_pinned_versions"
+          },
+          {
+            "criterion": 1,
+            "coverage": "automated",
+            "test": "plugin_fs_and_plugin_dialog_js_packages_are_gone_from_package_json_and_lock"
+          },
+          {
+            "criterion": 2,
+            "coverage": "automated",
+            "test": "typecheck_script_is_tsc_b_and_exits_zero"
+          },
+          {
+            "criterion": 3,
+            "coverage": "automated",
+            "test": "cargo_workspace_has_core_as_default_member_and_core_has_no_tauri_dep + rust: bundled_oas_schemas_parse_and_declare_expected_drafts, bundled_schemas_have_no_remote_refs (proof = cargo gate output shows >=1 test run)"
+          },
+          {
+            "criterion": 4,
+            "coverage": "automated",
+            "test": "vitest_config_excludes_fixtures_and_a_real_non_task_test_exists (proof = vitest gate itself reports >=1 test)"
+          },
+          {
+            "criterion": 5,
+            "coverage": "automated",
+            "test": "union_of_all_capability_permissions_is_exactly_the_three_allowed"
+          },
+          {
+            "criterion": 5,
+            "coverage": "automated",
+            "test": "no_fs_http_shell_dialog_anywhere_and_plugin_fs_gone_from_rust_and_frontend"
+          },
+          {
+            "criterion": 6,
+            "coverage": "automated",
+            "test": "production_csp_is_an_object_with_no_remote_origins_or_script_relaxations"
+          },
+          {
+            "criterion": 6,
+            "coverage": "automated",
+            "test": "dev_csp_only_adds_the_local_vite_websocket"
+          },
+          {
+            "criterion": 7,
+            "coverage": "automated",
+            "test": "oas_3_0_schema_sha256_matches_recorded_value"
+          },
+          {
+            "criterion": 7,
+            "coverage": "automated",
+            "test": "oas_3_1_schema_sha256_matches_recorded_value"
+          }
+        ],
+        "test_count": 0,
+        "assumptions": [
+          "The hook's lane map is unchanged since attempts 1-2 (confirmed by a rejected Write on package.json), so all T002 deliverables are outside my writable set",
+          "Writing deliverables via shell redirection would bypass the ownership hook and is not acceptable",
+          "The orchestrator or a re-mapped lane will apply \u00a70.2; schemas must be fetched with curl -o (byte-exact), not retyped",
+          "http://ipc.localhost in connect-src is required by Tauri on Windows and is not a remote origin"
+        ],
+        "disputed_tests": [],
+        "escalation_note": "projects/apicoord/reviews/T002-escalation.md",
+        "escalations": [
+          {
+            "time": "2026-11-25T07:21:25",
+            "attempts": 3,
+            "issues": [
+              "ESCALATE: attempt 3 of 3 exhausted; 0/7 criteria met. Do not re-dispatch T002 until the operator decides B1-B4 in reviews/T002-escalation.md",
+              "B2 (root cause): the ownership hook uses a Spring lane map on a Tauri repo and blocks every T002 deliverable for architect and QA. Operator must either re-map the lanes to the architecture.md \u00a72 table or authorize the orchestrator to apply architecture.md \u00a70.2 steps 1-10 verbatim",
+              "B1: PIPELINE_STACK must be set to rust-tauri+ts-react; the configured gate cds into backend/ and frontend/, which don't exist",
+              "B3: cargo/rustup is not installed on the host; install it or accept C3 as `cargo test -p apicoord-core`",
+              "B4: npm install (with network access) must be run by T0's owner or the orchestrator, and package-lock.json committed",
+              "Place QA's three gate test files from bugs/t002-qa-lane-blocked-gate-tests-undeliverable.md under tests/task_t002/ (the task text wrongly says that folder already exists)",
+              "Orchestration: attempts 2 and 3 were dispatched despite the review's do-not-dispatch line; hold tasks whose review says so until the operator decides"
+            ],
+            "notes": "Same lane-map fix as T001. architect-desktop now owns package.json, Cargo.toml, tauri.conf.json, capabilities/**, etc. Cargo is on PATH. npm install is a legitimate T0 deliverable per the updated architect-desktop prompt. Ready to apply \u00a79.1-9.5."
+          }
+        ],
+        "earlier_attempts": 3
       },
       {
         "id": "T003",
@@ -370,15 +541,82 @@
         "reviews": []
       }
     ],
-    "bugs": [],
-    "cost_usd": 5.6246,
+    "bugs": [
+      {
+        "id": "BUG-001",
+        "task": "T001",
+        "title": "ipc-contract.md not replaced with architecture.md \u00a75",
+        "severity": "blocker",
+        "status": "fixed",
+        "path": "projects/apicoord/bugs/BUG-001.md"
+      },
+      {
+        "id": "BUG-002",
+        "task": "T001",
+        "title": "ipc-contract.md not replaced with architecture.md \u00a75 (BUG-001 still open)",
+        "severity": "blocker",
+        "status": "fixed",
+        "path": "projects/apicoord/bugs/BUG-002.md"
+      },
+      {
+        "id": "BUG-003",
+        "task": "T001",
+        "title": "ipc-contract.md not replaced with architecture.md \u00a75 (already filed as bugs/001)",
+        "severity": "blocker",
+        "status": "fixed",
+        "path": "projects/apicoord/bugs/BUG-003.md"
+      },
+      {
+        "id": "BUG-004",
+        "task": "T002",
+        "title": "T002 config deltas not applied; gate still red",
+        "severity": "blocker",
+        "status": "open",
+        "path": "projects/apicoord/bugs/BUG-004.md"
+      }
+    ],
+    "cost_usd": 13.166,
+    "cost_by_phase": {
+      "building": {
+        "architect-desktop": {
+          "cost_usd": 0.6282,
+          "calls": 1,
+          "tokens": {
+            "input": 20,
+            "output": 7133,
+            "cache_read": 388924,
+            "cache_write": 50913
+          }
+        },
+        "qa-engineer": {
+          "cost_usd": 0.2478,
+          "calls": 1,
+          "tokens": {
+            "input": 6,
+            "output": 1327,
+            "cache_read": 109383,
+            "cache_write": 55390
+          }
+        },
+        "auditor": {
+          "cost_usd": 0.507,
+          "calls": 1,
+          "tokens": {
+            "input": 10,
+            "output": 4434,
+            "cache_read": 169419,
+            "cache_write": 47994
+          }
+        }
+      }
+    },
     "summary": null,
     "design_notes": null,
     "tokens": {
-      "input": 180,
-      "output": 142454,
-      "cache_read": 1848379,
-      "cache_write": 433646
+      "input": 470,
+      "output": 273158,
+      "cache_read": 5177420,
+      "cache_write": 1088037
     },
     "research": [
       "studio/research/INDEX.md",

@@ -198,5 +198,21 @@
       "source": "product-manager",
       "predicted_before_done": true
     }
+  },
+  "actual": {
+    "T001": [
+      "projects/apicoord/bugs/001-ipc-contract-not-replaced.md",
+      "projects/apicoord/design/architecture.md",
+      "projects/apicoord/design/ipc-contract.md",
+      "projects/apicoord/frontend/src/__tests__/tasks/task_t001/ipc-contract.test.ts",
+      "projects/apicoord/reviews/T001-escalation.md",
+      "projects/apicoord/reviews/T001-review.md"
+    ],
+    "T002": [
+      "projects/apicoord/bugs/t002-qa-lane-blocked-gate-tests-undeliverable.md",
+      "projects/apicoord/design/architecture.md",
+      "projects/apicoord/reviews/T002-escalation.md",
+      "projects/apicoord/reviews/T002-review.md"
+    ]
   }
 }
