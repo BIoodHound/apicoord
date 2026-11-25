@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "apicoord",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -8,14 +8,19 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest",
+    "typecheck": "tsc -b",
     "tauri": "tauri"
   },
   "dependencies": {
+    "@monaco-editor/react": "~4.7.0",
     "@tauri-apps/api": "^2.1.1",
-    "@tauri-apps/plugin-dialog": "^2.0.1",
-    "@tauri-apps/plugin-fs": "^2.0.3",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "monaco-editor": "~0.54.0",
+    "monaco-yaml": "~5.5.1",
+    "react": "~18.3.1",
+    "react-dom": "~18.3.1",
+    "swagger-ui-react": "~5.36.0",
+    "yaml": "^2.9.1",
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.1.0",
@@ -23,6 +28,7 @@
     "@testing-library/react": "^16.0.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/swagger-ui-react": "~5.18.0",
     "@vitejs/plugin-react": "^4.3.3",
     "jsdom": "^25.0.1",
     "typescript": "^5.6.3",

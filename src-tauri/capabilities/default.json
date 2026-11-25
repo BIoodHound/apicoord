@@ -1,12 +1,10 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
+  "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Minimal baseline permissions. Extend per-feature; never widen this file.",
+  "description": "Baseline webview permissions. Never widen this file; add narrow capability files instead (architecture.md §9.4).",
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "core:window:allow-set-title",
-    "dialog:allow-open",
-    "dialog:allow-save"
+    "core:window:allow-set-title"
   ]
 }

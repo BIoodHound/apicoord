@@ -1,0 +1,9 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "window-lifecycle",
+  "description": "Lets the main window destroy itself after the dirty-state guard passes on close-requested (architecture.md §6.5).",
+  "windows": ["main"],
+  "permissions": [
+    "core:window:allow-destroy"
+  ]
+}
