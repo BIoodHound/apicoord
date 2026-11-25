@@ -1,5 +1,12 @@
 # T001 review: ipc-contract.md ← architecture.md §5
 
+## Re-dispatch after escalation, attempt 3 of 3: **accept**
+
+- I re-read both files. `design/ipc-contract.md` is the title plus architecture.md lines 122–210 (§5) verbatim: 9 commands, 2 events, `{code,message}` errors, and only `open_recent` takes a path. architecture.md has `enableSchemaRequest: false` everywhere, D2 says schemas are bundled, and the only URLs are for the authoring-time download. All 4 criteria pass.
+- The attempt-2 issue is resolved: `reviews/T001-escalation.md` is back to the orchestrator's text (it is listed in files_changed only because of the revert). Architects must not edit orchestrator-owned review files.
+- The gate is still empty ("PASSED", no output) because B4 (node_modules) and B1 (`cd backend && mvn`) are unfixed. I'm accepting on direct inspection of the files, not on the gate run. T0 must fix B1/B4.
+- The follow-ups below still stand: the stale B2/D16 wording in architecture.md and the test-file location.
+
 ## Re-dispatch after escalation, attempt 1 of 3: **accept**
 
 The ownership-hook fix (B2) was applied before this attempt, so the architect could finally write the file.

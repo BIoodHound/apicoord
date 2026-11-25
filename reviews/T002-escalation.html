@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T002 escalated: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</title>
+<style>
+  :root {
+    --bg: #faf9f6; --fg: #22211f; --muted: #6b6760; --line: #e2ded6;
+    --code-bg: #f0ede6; --accent: #b8860b; --link: #2b5fab;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1918; --fg: #e8e5df; --muted: #9a958c; --line: #34322f;
+      --code-bg: #262422; --accent: #e0b44c; --link: #8ab4f8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .layout {
+    display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px;
+    max-width: 1120px; margin: 0 auto; padding: 48px 24px 96px;
+  }
+  .layout.no-nav { grid-template-columns: minmax(0, 1fr); max-width: 808px; }
+  nav { position: sticky; top: 32px; align-self: start; font-size: 14px; }
+  nav .label {
+    text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  nav ol { list-style: none; margin: 0; padding: 0; }
+  nav li { margin: 2px 0; }
+  nav a {
+    display: block; padding: 3px 0 3px 10px; border-left: 2px solid var(--line);
+    color: var(--muted); text-decoration: none;
+  }
+  nav a:hover { color: var(--fg); border-left-color: var(--accent); }
+  main { max-width: 760px; min-width: 0; }
+  .meta { color: var(--muted); font-size: 13px; margin: 0 0 8px; }
+  h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 16px; letter-spacing: -0.01em; }
+  h2 { font-size: 1.35rem; margin: 48px 0 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+  h3 { font-size: 1.08rem; margin: 28px 0 8px; }
+  a { color: var(--link); }
+  code {
+    font: 0.88em/1.4 ui-monospace, "Cascadia Code", Consolas, monospace;
+    background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere;
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px;
+    padding: 14px 16px; overflow-x: auto; font-size: 13.5px; line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+  .table-wrap { overflow-x: auto; margin: 20px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  ul, ol { padding-left: 1.3em; }
+  li { margin: 6px 0; }
+  blockquote { border-left: 3px solid var(--accent); margin: 16px 0; padding: 4px 0 4px 16px; color: var(--muted); }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 32px 0; }
+  strong { font-weight: 650; }
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: 1fr; gap: 24px; padding: 32px 16px 64px; }
+    nav { position: static; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <div class="label">Contents</div>
+  <ol>
+    <li><a href="#what-was-asked">What was asked</a></li>
+    <li><a href="#why-it-was-rejected-last">Why it was rejected last</a></li>
+    <li><a href="#worth-knowing">Worth knowing</a></li>
+    <li><a href="#where-the-work-is">Where the work is</a></li>
+    <li><a href="#the-agents-assumptions">The agent's assumptions</a></li>
+    <li><a href="#reviews">Reviews</a></li>
+    <li><a href="#history">History</a></li>
+    <li><a href="#your-call">Your call</a></li>
+  </ol>
+</nav>
+<main>
+<p class="meta">Generated from T002-escalation.md</p>
+<h1 id="t002-escalated-t0-project-config-cargo-workspace-csp-capabilities-vendored-schemas">T002 escalated: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</h1>
+<p>Owner: architect · attempts: 3 · written 2026-11-24 21:19</p>
+<h2 id="what-was-asked">What was asked</h2>
+<p>Apply §9.1–9.5: remove plugin-fs/plugin-dialog JS packages; pin monaco-editor ~0.54, monaco-yaml ~5.5.1, swagger-ui-react ~5.36, React 18.3; strict CSP; capabilities narrowed to core:default, set-title, window-destroy plus window-lifecycle.json; Cargo workspace with apicoord-core; vendor oas-3.0.json and oas-3.1.json with recorded sha256; add typecheck script; run npm install and commit package-lock.json.</p>
+<ul>
+<li>npm install succeeds and package-lock.json is committed</li>
+<li>npm run typecheck runs</li>
+<li>cargo test --manifest-path src-tauri/Cargo.toml runs at least one test</li>
+<li>npm test -- --run runs at least one test</li>
+<li>Webview permissions are only core:default, set-title, window-destroy</li>
+<li>CSP is strict with no remote origins</li>
+<li>Vendored schema sha256 values match §9.5</li>
+</ul>
+<h2 id="why-it-was-rejected-last">Why it was rejected last</h2>
+<ul>
+<li>ESCALATE: attempt 3 of 3 exhausted; 0/7 criteria met. Do not re-dispatch T002 until the operator decides B1-B4 in reviews/T002-escalation.md</li>
+<li>B2 (root cause): the ownership hook uses a Spring lane map on a Tauri repo and blocks every T002 deliverable for architect and QA. Operator must either re-map the lanes to the architecture.md §2 table or authorize the orchestrator to apply architecture.md §0.2 steps 1-10 verbatim</li>
+<li>B1: PIPELINE_STACK must be set to rust-tauri+ts-react; the configured gate cds into backend/ and frontend/, which don't exist</li>
+<li>B3: cargo/rustup is not installed on the host; install it or accept C3 as <code>cargo test -p apicoord-core</code></li>
+<li>B4: npm install (with network access) must be run by T0's owner or the orchestrator, and package-lock.json committed</li>
+<li>Place QA's three gate test files from bugs/t002-qa-lane-blocked-gate-tests-undeliverable.md under tests/task_t002/ (the task text wrongly says that folder already exists)</li>
+<li>Orchestration: attempts 2 and 3 were dispatched despite the review's do-not-dispatch line; hold tasks whose review says so until the operator decides</li>
+</ul>
+<h2 id="worth-knowing">Worth knowing</h2>
+<ul>
+<li>The plan had architect change files it doesn't own: projects/apicoord/package.json, projects/apicoord/package-lock.json, projects/apicoord/tsconfig.json, projects/apicoord/vite.config.ts, projects/apicoord/src-tauri/Cargo.toml, projects/apicoord/src-tauri/core/Cargo.toml, projects/apicoord/src-tauri/tauri.conf.json, projects/apicoord/src-tauri/capabilities/default.json, projects/apicoord/src-tauri/capabilities/window-lifecycle.json, projects/apicoord/src-tauri/resources/schemas/oas-3.0.json, projects/apicoord/src-tauri/resources/schemas/oas-3.1.json. If that's what blocked it, widen <code>owns:</code> in .claude/agents/architect.md or give the task to another owner, then retry.</li>
+</ul>
+<h2 id="where-the-work-is">Where the work is</h2>
+<p>branch <code>task/t002</code> of projects/apicoord, commit 7682845. Its tests: projects/apicoord/tests/task_t002.</p>
+<h2 id="the-agents-assumptions">The agent's assumptions</h2>
+<ul>
+<li>The hook's lane map is unchanged since attempts 1-2 (confirmed by a rejected Write on package.json), so all T002 deliverables are outside my writable set</li>
+<li>Writing deliverables via shell redirection would bypass the ownership hook and is not acceptable</li>
+<li>The orchestrator or a re-mapped lane will apply §0.2; schemas must be fetched with curl -o (byte-exact), not retyped</li>
+<li>http://ipc.localhost in connect-src is required by Tauri on Windows and is not a remote origin</li>
+</ul>
+<h2 id="reviews">Reviews</h2>
+<ul>
+<li>projects/apicoord/reviews/T002-attempt1.md</li>
+<li>projects/apicoord/reviews/T002-attempt2.md</li>
+<li>projects/apicoord/reviews/T002-attempt3.md</li>
+</ul>
+<h2 id="history">History</h2>
+<ul>
+<li>21:08 <strong>qa-engineer</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>21:10 <strong>qa-engineer</strong> end: done</li>
+<li>last words: "I couldn't deliver the T002 tests to any place the gate runs, and none of them have been run, so there is no red run to show. The ownership hook only lets me write to <code>backend/src/test/java/tasks/**</code>, <code>frontend/src/__tests__/tasks/**</code> and <code>bugs/**</code>. This repo has neither <code>backend/</code> nor <code>frontend/</code>, "</li>
+<li>21:10 <strong>architect</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>21:13 <strong>architect</strong> end: done</li>
+<li>last words: "I couldn't apply T002. None of the seven acceptance criteria is met, and nothing was installed or committed in the worktree. Blocker B2 in <code>architecture.md</code> is still unfixed: the file-ownership hook gives me the Spring layout (<code>backend/**</code>, <code>frontend/**</code>, the design docs). It rejected my writes to `"</li>
+<li>21:13 <strong>orchestrator</strong> gate: T002 passed the acceptance-review gate</li>
+<li>21:13 <strong>qa-engineer</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>21:13 <strong>qa-engineer</strong> end: done</li>
+<li>last words: "Nothing in T002 was applied, so I'm returning it with issues. The empty "PASSED" test run is not evidence for any criterion."</li>
+<li>21:13 <strong>auditor</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>21:14 <strong>auditor</strong> end: done</li>
+<li>last words: "T002 fails: none of its 7 acceptance criteria are met, and the work can't be retried until the operator makes a few decisions. The cause is outside the architect's lane. The file-ownership hook still uses the Spring lane map (<code>backend/**</code>, <code>frontend/**</code>), so it blocked the architect from writing any"</li>
+<li>21:14 <strong>architect</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>21:16 <strong>architect</strong> end: done</li>
+<li>last words: "T002 is still not delivered: none of the 7 acceptance criteria is met, and the gate stays red. Nothing outside <code>design/architecture.md</code> changed. The file-ownership hook still blocks me from every T002 file (root cause B2). When I tried to edit <code>package.json</code>, it was rejected with the same Spring-sty"</li>
+<li>21:16 <strong>orchestrator</strong> gate: T002 passed the acceptance-review gate</li>
+<li>21:16 <strong>qa-engineer</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>21:16 <strong>qa-engineer</strong> end: done</li>
+<li>last words: "Nothing from T002 was applied, so every criterion fails. The empty "PASSED" run proves nothing."</li>
+<li>21:16 <strong>auditor</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>21:17 <strong>auditor</strong> end: done</li>
+<li>last words: "I've returned T002 again: 0 of 7 acceptance criteria are met, and attempt 3 shouldn't be dispatched until the operator decides the four questions in the escalation note."</li>
+<li>21:17 <strong>architect</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>21:18 <strong>architect</strong> end: done</li>
+<li>last words: "I couldn't deliver T002 again: none of the 7 acceptance criteria are met. The ownership hook still blocks me from every T002 file. My first action was writing <code>package.json</code>, and the hook rejected it with the same Spring-project list as before (<code>frontend/package.json</code>, <code>backend/pom.xml</code>, …). I didn'"</li>
+<li>21:18 <strong>orchestrator</strong> gate: T002 passed the acceptance-review gate</li>
+<li>21:18 <strong>qa-engineer</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>21:18 <strong>qa-engineer</strong> end: done</li>
+<li>last words: "The T002 deliverables are not in the worktree, so every criterion fails. The earlier "PASSED" run had empty output, so I counted it as not run and it is no evidence for any criterion."</li>
+<li>21:18 <strong>auditor</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>21:19 <strong>auditor</strong> end: done</li>
+<li>last words: "T002 has failed its last attempt, so it is escalated to you. None of the 7 acceptance criteria are met and no attempts remain. Don't send it out again until you decide B1–B4 in <code>T002-escalation.md</code>."</li>
+</ul>
+<h2 id="your-call">Your call</h2>
+<ul>
+<li>Retry: fix what blocked it, then <code>python -m orchestrator retry T002 --notes "..."</code> and <code>run</code>. The retry continues from the work above.</li>
+<li>Rescope or split it: tell the producer what to change.</li>
+<li>Drop it: say so in the milestone review; its tests stay parked.</li>
+</ul>
+</main>
+</div>
+</body>
+</html>
