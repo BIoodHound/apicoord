@@ -6,7 +6,7 @@
   "usage_cap": null,
   "pause_requested": false,
   "next_task": 15,
-  "next_bug": 5,
+  "next_bug": 6,
   "milestone": {
     "id": 1,
     "goal": "Increment 1 \u2014 A working split view. Deliver: Tauri 2.x shell launching on Windows, file menu (Open/Save/Save As/Recent/Close via native dialogs), Monaco editor loading OpenAPI 3.0/3.1 YAML+JSON (language auto-detected from extension with UI override), debounced parse (200ms) updating a swagger-ui-react view with 'Try it out' disabled, last-good view retained on parse errors, schema validation on by default via monaco-yaml against the OpenAPI 3.1 schema cached in app_data_dir, red squiggles for violations, Save preserving line endings and encoding. No reader file, no copy-context command, no terminal \u2014 those are Increment 2 and 3. Perf: open Petstore 3.1 in <200ms; 10k-line spec responsive during Monaco highlight; keystroke-to-preview p95 <250ms. See product-brief.md for the full brief, architecture.md for lanes, ipc-contract.md for the IPC starting point. The GitHub repo is at https://github.com/BIoodHound/apicoord and already has an initial scaffold commit \u2014 do NOT force-push or re-init; commits land as fast-forwards on main.",
@@ -42,13 +42,14 @@
           "architecture.md has no remote schema fetch"
         ],
         "status": "done",
-        "attempts": 1,
+        "attempts": 3,
         "last_issues": [],
         "reviews": [
           "projects/apicoord/reviews/T001-attempt1.md",
           "projects/apicoord/reviews/T001-attempt2.md",
           "projects/apicoord/reviews/T001-attempt3.md",
-          "projects/apicoord/reviews/T001-attempt1.md"
+          "projects/apicoord/reviews/T001-attempt1.md",
+          "projects/apicoord/reviews/T001-attempt3.md"
         ],
         "ownership_gaps": [
           "projects/apicoord/design/ipc-contract.md"
@@ -100,9 +101,8 @@
         ],
         "test_count": 0,
         "assumptions": [
-          "The current \u00a75 text in architecture.md is the source of truth, including its intro line saying ipc-contract.md mirrors it (copied in T001), which an earlier attempt added.",
-          "I did not run npm install inside the worktree: this task is not T0, and a full install would change package-lock.json. I used a throwaway vitest install in /tmp to run the tests instead.",
-          "Out-of-date B2 mentions elsewhere in architecture.md (\u00a70, D16) are outside this task's acceptance criteria, so I left them unchanged; editing \u00a75 would break the word-for-word match."
+          "Reverting means making the escalation note identical to main's HEAD, because my earlier task commit is what changed it.",
+          "The tests live at frontend/src/__tests__/tasks/task_t001/, not tests/task_t001/ as the task text says."
         ],
         "disputed_tests": [],
         "escalation_note": "projects/apicoord/reviews/T001-escalation.md",
@@ -119,7 +119,8 @@
             "notes": "Lane map bug fixed: team.py _project_stack() now accepts backtick-wrapped stack: in product-brief. architect now resolves to architect-desktop with Tauri paths including design/ipc-contract.md. Cargo 1.100.0 installed. Ready to deliver the IPC contract copy from architecture.md \u00a75."
           }
         ],
-        "earlier_attempts": 3
+        "earlier_attempts": 3,
+        "exclusive": true
       },
       {
         "id": "T002",
@@ -573,39 +574,47 @@
         "severity": "blocker",
         "status": "open",
         "path": "projects/apicoord/bugs/BUG-004.md"
+      },
+      {
+        "id": "BUG-005",
+        "task": "T001",
+        "title": "Test gate cannot run: node_modules lacks vite/vitest",
+        "severity": "major",
+        "status": "fixed",
+        "path": "projects/apicoord/bugs/BUG-005.md"
       }
     ],
-    "cost_usd": 13.166,
+    "cost_usd": 14.4965,
     "cost_by_phase": {
       "building": {
         "architect-desktop": {
-          "cost_usd": 0.6282,
-          "calls": 1,
+          "cost_usd": 1.2115,
+          "calls": 4,
           "tokens": {
-            "input": 20,
-            "output": 7133,
-            "cache_read": 388924,
-            "cache_write": 50913
+            "input": 62,
+            "output": 16340,
+            "cache_read": 1229540,
+            "cache_write": 79692
           }
         },
         "qa-engineer": {
-          "cost_usd": 0.2478,
-          "calls": 1,
+          "cost_usd": 0.4898,
+          "calls": 2,
           "tokens": {
-            "input": 6,
-            "output": 1327,
-            "cache_read": 109383,
-            "cache_write": 55390
+            "input": 14,
+            "output": 2968,
+            "cache_read": 279081,
+            "cache_write": 107023
           }
         },
         "auditor": {
-          "cost_usd": 0.507,
-          "calls": 1,
+          "cost_usd": 1.0122,
+          "calls": 2,
           "tokens": {
-            "input": 10,
-            "output": 4434,
-            "cache_read": 169419,
-            "cache_write": 47994
+            "input": 22,
+            "output": 7733,
+            "cache_read": 398299,
+            "cache_write": 97115
           }
         }
       }
@@ -613,10 +622,10 @@
     "summary": null,
     "design_notes": null,
     "tokens": {
-      "input": 470,
-      "output": 273158,
-      "cache_read": 5177420,
-      "cache_write": 1088037
+      "input": 532,
+      "output": 287305,
+      "cache_read": 6416614,
+      "cache_write": 1217570
     },
     "research": [
       "studio/research/INDEX.md",

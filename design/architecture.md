@@ -3,8 +3,8 @@
 > Owned by the architect. Everyone else reads it to know where things go.
 > State: **Increment 1 (M1) — "a working split view" — BUILD, first task applied (2026-11-24).**
 > Specs `design/specs/m1-*.md` (operator-approved), council decision `design/council/m1/decision.md`,
-> operator answers Q1–Q7 folded into §13. §5 is the **authoritative IPC contract**. `design/ipc-contract.md`
-> must be replaced with §5 verbatim (the ownership hook blocks the architect, see B2).
+> operator answers Q1–Q7 folded into §13. §5 is the **authoritative IPC contract**; `design/ipc-contract.md`
+> holds a verbatim copy of §5 (T001) and must be updated in the same task whenever §5 changes.
 > Note on vocabulary: this is a Tauri desktop app, not a game. "Scene tree" = React component tree (§3),
 > "autoloads" = app-lifetime singletons (§4), "gameplay ↔ UI signals" = Rust ↔ webview commands/events (§5),
 > "physics layers" = trust boundaries (§8), "input actions" = shortcuts (§7).
@@ -18,7 +18,7 @@ These are outside every agent's lane, and each one blocks T0.
 | # | Problem (verified 2026-11-24) | Fix |
 |---|---|---|
 | B1 | The configured test gate is `cd backend && mvn -q test` / `cd frontend && npm test`. **Neither directory exists**; the gate fails on `cd`. Cause: `PIPELINE_STACK` defaults to `java-spring+ts-react` (`orchestrator/runner_adapter.py`). | Run apicoord with `PIPELINE_STACK=rust-tauri+ts-react`. That adapter already exists and runs `cd src-tauri && cargo test` + `npm test -- --run` at the project root, with task tests at `src-tauri` test names `task_<id>` and `src/__tests__/tasks/task_<id>/`. |
-| B2 | The file-ownership hook uses the Spring lane map (`backend/pom.xml`, `frontend/package.json`, `api-contract.md`). In this repo the architect can't write `package.json`, `tsconfig.json`, `vite.config.ts`, `src-tauri/Cargo.toml`, `tauri.conf.json`, `capabilities/*`, `src-tauri/src/lib.rs` or `design/ipc-contract.md`, although §2 assigns them to the architect. | Re-map the architect lane for the tauri stack (the §2 table). Until then, **this document is the authoritative IPC contract (§5)**, and T0's owner applies the config deltas in §9 verbatim. |
+| B2 | The file-ownership hook uses the Spring lane map (`backend/pom.xml`, `frontend/package.json`, `api-contract.md`). In this repo the architect can't write `package.json`, `tsconfig.json`, `vite.config.ts`, `src-tauri/Cargo.toml`, `tauri.conf.json`, `capabilities/*`, `src-tauri/src/lib.rs` or `design/ipc-contract.md`, although §2 assigns them to the architect. | Re-map the architect lane for the tauri stack (the §2 table). Until then, **this document is the authoritative IPC contract (§5)**, and T0's owner applies the config deltas in §9 verbatim. T001 was still blocked on 2026-11-24 (attempt 2). Whoever is allowed to write `design/ipc-contract.md` replaces it with the title `# APICoord — IPC contract`, a blank line, then the output of `awk '/^## 5\. /{f=1} /^## 6\. /{f=0} f' design/architecture.md`. |
 | B3 | The gate host (Raspberry Pi, linux-arm64) has **no `cargo`** and no `webkit2gtk-4.1`. Any `cargo test` that builds the `tauri` crate fails on this host. | Install rustup + Tauri's Linux prerequisites (`libwebkit2gtk-4.1-dev`, `libsoup-3.0-dev`, `libjavascriptcoregtk-4.1-dev`, `librsvg2-dev`, `build-essential`, `pkg-config`). Independently, §2 puts all logic in a tauri-free crate, `apicoord-core`, so `cargo test -p apicoord-core` works on any host with only rustup. |
 
 | B4 | `node_modules/` is absent, so `npm test -- --run` fails with `vitest: not found`. The architect may not run `npm install`. | T0 (per m1-foundation, "a build with the pinned deps succeeds") runs `npm install` after applying §9.1 and commits `package-lock.json`. |
@@ -121,7 +121,7 @@ Bootstrap order in `App` (one effect): `listen('menu://action')` → `listen('re
 
 ## 5. Rust ↔ UI contract (commands, events, types) — authoritative
 
-`design/ipc-contract.md` must mirror this section (blocked by B2).
+`design/ipc-contract.md` mirrors this section verbatim (copied in T001); change both files together, in the same task.
 
 ### 5.1 Commands
 
