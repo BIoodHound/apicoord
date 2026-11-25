@@ -1,29 +1,24 @@
 # T001 review: ipc-contract.md ← architecture.md §5
 
-## Attempt 3 of 3: **escalate**
+## Re-dispatch after escalation, attempt 1 of 3: **accept**
+
+The ownership-hook fix (B2) was applied before this attempt, so the architect could finally write the file.
 
 | # | Criterion | Result |
 |---|---|---|
-| 1 | ipc-contract.md is §5 verbatim | FAIL. I checked: the file is still the 29-line placeholder. |
-| 2 | 9 commands, 2 events | FAIL. Only `ping` is listed, and there are no events. |
-| 3 | Only open_recent takes a path | FAIL. The rule is not in the contract file. |
-| 4 | No remote schema fetch in architecture.md | PASS, checked by grep and confirmed by both the architect and QA. |
+| 1 | ipc-contract.md is §5 verbatim | PASS. I checked: the file is the title line plus `## 5.` through to just before `## 6.`. That includes the §5 intro line ("mirrors this section verbatim (copied in T001)"). QA's diff shows only a trailing blank line. |
+| 2 | 9 commands, 2 events | PASS. The 9 command rows are ping, open_spec_dialog, open_recent, save_spec, save_spec_as, close_document, list_recent, get_schema and exit_app. The 2 events are menu://action and recent://changed. |
+| 3 | Only open_recent takes a path | PASS. The Args column has `path` only on `open_recent`, and the allow-list rule is stated in the file. |
+| 4 | No remote schema fetch in architecture.md | PASS. `enableSchemaRequest: false` is set everywhere, schemas load with `include_str!`, and the only remote URLs are the authoring-time spec.openapis.org sources. |
 
-**This is the third identical failure.** B2 (the ownership hook blocks the architect from writing `design/ipc-contract.md`) and B4 (no node_modules) were still unfixed when attempt 3 was dispatched, even though `T001-escalation.md` asked for them to be fixed first. No agent can close this task. Closing it takes one file copy and one `npm install`.
+**Test quality:** `ipc-contract.test.ts` (8 tests) asserts directly on each criterion and on two edge cases: the placeholder is gone, and no unexpected remote URLs appear. These are good document-contract tests. **However, the gate run was again empty ("PASSED" with no output)**, because B4 (`node_modules` missing) is still unfixed. The only evidence the tests pass is the implementer's scratch vitest install in /tmp. The file checks are simple, and I verified them by reading both files myself, so I'm accepting on that basis. B4 must still be fixed in T0.
 
-**A likely cause of B2:** the placeholder's own header says *"The architect-desktop owns this file"*. The ownership map probably gives the file to the role `architect-desktop`, but the task was dispatched to `architect`. That is a role-name mismatch in the lane map. The architect's work is not at fault.
+**Lane / scope:** only `design/ipc-contract.md` changed, which is in lane. The architect correctly ran tests from /tmp so the worktree's lockfile didn't change.
 
-**Owner conduct:** correct again. The architect did not get around the hook, made no edits it didn't need, re-checked criterion 4, and gave an exact copy recipe.
-
-**Test quality:** no tests ran. The "PASSED" run had empty output, and QA correctly treated it as no evidence. The 8 tests in `ipc-contract.test.ts` have not run yet in any attempt.
-
-**Lane / scope:** no files changed and no violations.
-
-See `T001-escalation.md` for the operator decisions.
+**Follow-ups (non-blocking, architect):**
+- architecture.md §0 B2 and the header note (line 6) still describe B2 as blocking. D16's wording ("until ipc-contract.md is replaced") is now satisfied. Update these outside §5 in the next architect task.
+- The test file lives in `frontend/src/__tests__/tasks/task_t001/`, but this repo has no `frontend/` dir. Move it to `src/__tests__/tasks/task_t001/` when the QA lane is re-mapped (the file header already says this).
 
 ---
-## Attempt 2 (summary)
-Return-with-issues, with a recommendation to escalate before attempt 3. Same three failures for the same reasons (B2, B4). The §5 opening line was finalised in architecture.md.
-
-## Attempt 1 (summary)
-Return-with-issues. Same three criteria failed (B2 hook block, B4 no node_modules). The architect correctly did not get around the hook.
+## Original run, attempt 3 of 3 (summary): escalate
+All three file criteria failed, for the same reason as attempts 1 and 2: the ownership hook blocked the architect (role-name mismatch `architect-desktop` vs `architect`). See `T001-escalation.md`. The hook fix this time confirmed that diagnosis.
