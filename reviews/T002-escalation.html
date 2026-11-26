@@ -85,7 +85,7 @@
 <main>
 <p class="meta">Generated from T002-escalation.md</p>
 <h1 id="t002-escalated-t0-project-config-cargo-workspace-csp-capabilities-vendored-schemas">T002 escalated: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</h1>
-<p>Owner: architect · attempts: 3 · written 2026-11-25 15:32</p>
+<p>Owner: architect · attempts: 3 · written 2026-11-26 15:57</p>
 <h2 id="what-was-asked">What was asked</h2>
 <p>Apply §9.1–9.5: remove plugin-fs/plugin-dialog JS packages; pin monaco-editor ~0.54, monaco-yaml ~5.5.1, swagger-ui-react ~5.36, React 18.3; strict CSP; capabilities narrowed to core:default, set-title, window-destroy plus window-lifecycle.json; Cargo workspace with apicoord-core; vendor oas-3.0.json and oas-3.1.json with recorded sha256; add typecheck script; run npm install and commit package-lock.json.</p>
 <ul>
@@ -99,20 +99,21 @@
 </ul>
 <h2 id="why-it-was-rejected-last">Why it was rejected last</h2>
 <ul>
-<li>You changed files you don't own: worktrees/apicoord/t002/tsconfig.tsbuildinfo. Revert those changes and describe what you need from their owner in your summary instead.</li>
+<li>You changed files you don't own: worktrees/apicoord/t002/reviews/T002-escalation.md. Revert those changes and describe what you need from their owner in your summary instead.</li>
 </ul>
 <h2 id="worth-knowing">Worth knowing</h2>
 <ul>
 <li>The plan had architect change files it doesn't own: projects/apicoord/package.json, projects/apicoord/package-lock.json, projects/apicoord/tsconfig.json, projects/apicoord/vite.config.ts, projects/apicoord/src-tauri/Cargo.toml, projects/apicoord/src-tauri/core/Cargo.toml, projects/apicoord/src-tauri/tauri.conf.json, projects/apicoord/src-tauri/capabilities/default.json, projects/apicoord/src-tauri/capabilities/window-lifecycle.json, projects/apicoord/src-tauri/resources/schemas/oas-3.0.json, projects/apicoord/src-tauri/resources/schemas/oas-3.1.json. If that's what blocked it, widen <code>owns:</code> in .claude/agents/architect.md or give the task to another owner, then retry.</li>
-<li>The acceptance-review gate failed 3 time(s). The agent's last words are in the history below.</li>
+<li>The acceptance-review gate failed 4 time(s). The agent's last words are in the history below.</li>
 </ul>
 <h2 id="where-the-work-is">Where the work is</h2>
-<p>branch <code>task/t002</code> of projects/apicoord, commit 1842c7d. Its tests: projects/apicoord/tests/task_t002.</p>
+<p>branch <code>task/t002</code> of projects/apicoord, commit 96db6ef. Its tests: projects/apicoord/tests/task_t002.</p>
 <h2 id="the-agents-assumptions">The agent's assumptions</h2>
 <ul>
-<li>package-lock.json belongs to the orchestrator/T0 lane, not the architect, as the rejection notes say</li>
-<li>Moving tsBuildInfoFile into gitignored node_modules/.tmp is an acceptable way to keep <code>tsc -b</code> from producing a tracked artifact; this file is in the architect's tsconfig lane</li>
-<li>lib.rs, src-tauri/core/** and tests/** are outside the current architect lane (the hook rejected them in attempt 4)</li>
+<li>Resolving the architecture.md §5 sync-note conflict in favour of main's wording is fine, as long as ipc-contract.md contains §5 verbatim (that is what the T001 test checks).</li>
+<li>Escalation file: keeping both texts (main's report, then our notes as history) satisfies 'keep both sides' intent'.</li>
+<li>Kept [workspace] members=["core"] in src-tauri/Cargo.toml even though core/ does not exist yet, because the contract and §9.5 require that shape; rust-dev must create src-tauri/core/Cargo.toml + src/lib.rs + schemas/oas-3.0.json + oas-3.1.json (exact contents in architecture §0.2 step 8) and delete <code>.plugin(tauri_plugin_fs::init())</code> from src-tauri/src/lib.rs.</li>
+<li>npm install-scripts (esbuild etc.) were left unapproved; vite/vitest/tsc work without them.</li>
 </ul>
 <h2 id="reviews">Reviews</h2>
 <ul>
@@ -171,6 +172,13 @@
 <li>15:32 <strong>architect-desktop</strong> end: done</li>
 <li>last words: "I fixed the problem that got the last attempt rejected, but T002 is still not done. Four of the seven acceptance criteria need files I'm not allowed to write."</li>
 <li>15:32 <strong>orchestrator</strong> gate: T002 failed the acceptance-review gate; back to architect</li>
+<li>09:29 <strong>architect-desktop</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>15:43 <strong>architect-desktop</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>15:54 <strong>architect-desktop</strong> start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas</li>
+<li>15:57 <strong>architect-desktop</strong> violation: changed worktrees/apicoord/t002/reviews/T002-escalation.md without owning it</li>
+<li>15:57 <strong>architect-desktop</strong> end: done</li>
+<li>last words: "T002 is only partly done. The frontend side passes, but <code>cargo test</code> can't run, and two other owners have to make changes before it can."</li>
+<li>15:57 <strong>orchestrator</strong> gate: T002 failed the acceptance-review gate; back to architect</li>
 </ul>
 <h2 id="your-call">Your call</h2>
 <ul>

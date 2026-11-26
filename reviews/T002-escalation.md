@@ -1,6 +1,6 @@
 # T002 escalated: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas
 
-Owner: architect · attempts: 3 · written 2026-11-25 15:32
+Owner: architect · attempts: 3 · written 2026-11-26 15:57
 
 ## What was asked
 
@@ -16,22 +16,23 @@ Apply §9.1–9.5: remove plugin-fs/plugin-dialog JS packages; pin monaco-editor
 
 ## Why it was rejected last
 
-- You changed files you don't own: worktrees/apicoord/t002/tsconfig.tsbuildinfo. Revert those changes and describe what you need from their owner in your summary instead.
+- You changed files you don't own: worktrees/apicoord/t002/reviews/T002-escalation.md. Revert those changes and describe what you need from their owner in your summary instead.
 
 ## Worth knowing
 
 - The plan had architect change files it doesn't own: projects/apicoord/package.json, projects/apicoord/package-lock.json, projects/apicoord/tsconfig.json, projects/apicoord/vite.config.ts, projects/apicoord/src-tauri/Cargo.toml, projects/apicoord/src-tauri/core/Cargo.toml, projects/apicoord/src-tauri/tauri.conf.json, projects/apicoord/src-tauri/capabilities/default.json, projects/apicoord/src-tauri/capabilities/window-lifecycle.json, projects/apicoord/src-tauri/resources/schemas/oas-3.0.json, projects/apicoord/src-tauri/resources/schemas/oas-3.1.json. If that's what blocked it, widen `owns:` in .claude/agents/architect.md or give the task to another owner, then retry.
-- The acceptance-review gate failed 3 time(s). The agent's last words are in the history below.
+- The acceptance-review gate failed 4 time(s). The agent's last words are in the history below.
 
 ## Where the work is
 
-branch `task/t002` of projects/apicoord, commit 1842c7d. Its tests: projects/apicoord/tests/task_t002.
+branch `task/t002` of projects/apicoord, commit 96db6ef. Its tests: projects/apicoord/tests/task_t002.
 
 ## The agent's assumptions
 
-- package-lock.json belongs to the orchestrator/T0 lane, not the architect, as the rejection notes say
-- Moving tsBuildInfoFile into gitignored node_modules/.tmp is an acceptable way to keep `tsc -b` from producing a tracked artifact; this file is in the architect's tsconfig lane
-- lib.rs, src-tauri/core/** and tests/** are outside the current architect lane (the hook rejected them in attempt 4)
+- Resolving the architecture.md §5 sync-note conflict in favour of main's wording is fine, as long as ipc-contract.md contains §5 verbatim (that is what the T001 test checks).
+- Escalation file: keeping both texts (main's report, then our notes as history) satisfies 'keep both sides' intent'.
+- Kept [workspace] members=["core"] in src-tauri/Cargo.toml even though core/ does not exist yet, because the contract and §9.5 require that shape; rust-dev must create src-tauri/core/Cargo.toml + src/lib.rs + schemas/oas-3.0.json + oas-3.1.json (exact contents in architecture §0.2 step 8) and delete `.plugin(tauri_plugin_fs::init())` from src-tauri/src/lib.rs.
+- npm install-scripts (esbuild etc.) were left unapproved; vite/vitest/tsc work without them.
 
 ## Reviews
 
@@ -90,6 +91,13 @@ branch `task/t002` of projects/apicoord, commit 1842c7d. Its tests: projects/api
 - 15:32 **architect-desktop** end: done
   - last words: "I fixed the problem that got the last attempt rejected, but T002 is still not done. Four of the seven acceptance criteria need files I'm not allowed to write."
 - 15:32 **orchestrator** gate: T002 failed the acceptance-review gate; back to architect
+- 09:29 **architect-desktop** start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas
+- 15:43 **architect-desktop** start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas
+- 15:54 **architect-desktop** start: Task T002: T0: project config, Cargo workspace, CSP, capabilities, vendored schemas
+- 15:57 **architect-desktop** violation: changed worktrees/apicoord/t002/reviews/T002-escalation.md without owning it
+- 15:57 **architect-desktop** end: done
+  - last words: "T002 is only partly done. The frontend side passes, but `cargo test` can't run, and two other owners have to make changes before it can."
+- 15:57 **orchestrator** gate: T002 failed the acceptance-review gate; back to architect
 
 ## Your call
 

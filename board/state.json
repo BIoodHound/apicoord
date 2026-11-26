@@ -6,7 +6,7 @@
   "usage_cap": null,
   "pause_requested": false,
   "next_task": 15,
-  "next_bug": 6,
+  "next_bug": 7,
   "milestone": {
     "id": 1,
     "goal": "Increment 1 \u2014 A working split view. Deliver: Tauri 2.x shell launching on Windows, file menu (Open/Save/Save As/Recent/Close via native dialogs), Monaco editor loading OpenAPI 3.0/3.1 YAML+JSON (language auto-detected from extension with UI override), debounced parse (200ms) updating a swagger-ui-react view with 'Try it out' disabled, last-good view retained on parse errors, schema validation on by default via monaco-yaml against the OpenAPI 3.1 schema cached in app_data_dir, red squiggles for violations, Save preserving line endings and encoding. No reader file, no copy-context command, no terminal \u2014 those are Increment 2 and 3. Perf: open Petstore 3.1 in <200ms; 10k-line spec responsive during Monaco highlight; keystroke-to-preview p95 <250ms. See product-brief.md for the full brief, architecture.md for lanes, ipc-contract.md for the IPC starting point. The GitHub repo is at https://github.com/BIoodHound/apicoord and already has an initial scaffold commit \u2014 do NOT force-push or re-init; commits land as fast-forwards on main.",
@@ -140,7 +140,7 @@
         "status": "escalated",
         "attempts": 3,
         "last_issues": [
-          "You changed files you don't own: worktrees/apicoord/t002/tsconfig.tsbuildinfo. Revert those changes and describe what you need from their owner in your summary instead."
+          "You changed files you don't own: worktrees/apicoord/t002/reviews/T002-escalation.md. Revert those changes and describe what you need from their owner in your summary instead."
         ],
         "reviews": [
           "projects/apicoord/reviews/T002-attempt1.md",
@@ -222,11 +222,17 @@
         ],
         "test_count": 0,
         "assumptions": [
-          "package-lock.json belongs to the orchestrator/T0 lane, not the architect, as the rejection notes say",
-          "Moving tsBuildInfoFile into gitignored node_modules/.tmp is an acceptable way to keep `tsc -b` from producing a tracked artifact; this file is in the architect's tsconfig lane",
-          "lib.rs, src-tauri/core/** and tests/** are outside the current architect lane (the hook rejected them in attempt 4)"
+          "Resolving the architecture.md \u00a75 sync-note conflict in favour of main's wording is fine, as long as ipc-contract.md contains \u00a75 verbatim (that is what the T001 test checks).",
+          "Escalation file: keeping both texts (main's report, then our notes as history) satisfies 'keep both sides' intent'.",
+          "Kept [workspace] members=[\"core\"] in src-tauri/Cargo.toml even though core/ does not exist yet, because the contract and \u00a79.5 require that shape; rust-dev must create src-tauri/core/Cargo.toml + src/lib.rs + schemas/oas-3.0.json + oas-3.1.json (exact contents in architecture \u00a70.2 step 8) and delete `.plugin(tauri_plugin_fs::init())` from src-tauri/src/lib.rs.",
+          "npm install-scripts (esbuild etc.) were left unapproved; vite/vitest/tsc work without them."
         ],
-        "disputed_tests": [],
+        "disputed_tests": [
+          {
+            "test": "tests/task_t002/* (whole suite)",
+            "reason": "The task says QA tests exist in tests/task_t002/, but that folder is absent from the worktree and from git history, so they could not be run. Contract items that need src-tauri/core/** (Cargo.toml, schemas with sha256, tests/*.rs) and the lib.rs change are in the rust-dev/QA lanes; the ownership hook rejected the architect's writes there."
+          }
+        ],
         "escalation_note": "projects/apicoord/reviews/T002-escalation.md",
         "escalations": [
           {
@@ -242,9 +248,17 @@
               "Orchestration: attempts 2 and 3 were dispatched despite the review's do-not-dispatch line; hold tasks whose review says so until the operator decides"
             ],
             "notes": "Same lane-map fix as T001. architect-desktop now owns package.json, Cargo.toml, tauri.conf.json, capabilities/**, etc. Cargo is on PATH. npm install is a legitimate T0 deliverable per the updated architect-desktop prompt. Ready to apply \u00a79.1-9.5."
+          },
+          {
+            "time": "2026-11-26T09:29:07",
+            "attempts": 3,
+            "issues": [
+              "You changed files you don't own: worktrees/apicoord/t002/tsconfig.tsbuildinfo. Revert those changes and describe what you need from their owner in your summary instead."
+            ],
+            "notes": "architect-desktop now owns package-lock.json, Cargo.lock, tsconfig.*.json. .tsbuildinfo is in IGNORED_SUFFIXES. Retry."
           }
         ],
-        "earlier_attempts": 3
+        "earlier_attempts": 6
       },
       {
         "id": "T003",
@@ -272,7 +286,122 @@
           "projects/apicoord/src-tauri/core/src/error.rs"
         ],
         "checkpoint": {
-          "attempt": 1
+          "attempt": 1,
+          "impl": {
+            "data": {
+              "summary": "Built the T003 Rust skeletons. The ownership hook blocked rust-dev from src-tauri/Cargo.toml, src-tauri/src/lib.rs and all of src-tauri/core/**, so those are staged verbatim under src-tauri/tests/t003_handoff/ (README.md has the copy commands) for the architect/T0 owner to copy into place. Written in place: src/state.rs (Session, CurrentDoc, SessionState = Mutex<Session>), src/error.rs (pub use apicoord_core::error::{AppError, AppResult}, no enum), src/menu.rs (install is a no-op stub; to_event maps file.* IDs to MenuEvent, resolving file.recent.N from session.recent), commands/{health,file,recent,schema,app}.rs with all 9 #[tauri::command] fns. ping returns \"ok\"; list_recent and close_document work; exit_app calls app.exit(0); get_schema delegates to core (Internal error until schemas are vendored); open_spec_dialog/open_recent/save_spec/save_spec_as return AppError::Internal(\"... not implemented yet\") instead of panicking. Staged: workspace Cargo.toml (workspace members/default-members incl. core, apicoord-core path dep, tracing, tauri-plugin-fs removed, dev-dep tauri features=[test]); lib.rs per \u00a712 (dialog plugin, managed Session, setup seeds issued from MRU, on_menu_event emits menu://action, generate_handler with exactly 9 commands, no plugin-fs); core crate (Cargo.toml with serde/serde_json/thiserror and tempfile dev-dep only; error.rs adjacently tagged snake_case AppError with Display = message plus From<io::Error>; models.rs with TextEncoding/Eol/OpenApiVersion/OpenedSpec/SaveResult/RecentEntry/MenuAction/MenuEvent per \u00a75.3; paths.rs NormPath with Windows normalisation implemented and tested; textcodec/eol/doc/fsx/sniff with todo!() bodies; mru::load returns empty and schemas::ensure_copied is a no-op so setup() never panics); QA's BUG-006 core test task_t003_error.rs. QA's ping-over-IPC test is added verbatim to commands/health.rs. Verified: the staged core crate builds and its 8 tests pass (6 unit + QA's 2), including via `cargo test -p apicoord-core` in a simulated workspace with the handoff applied, and every QA assertion in rustSkeleton.test.ts passes against that simulated tree when re-run as a node script (vitest is not installed, B4). The app crate cannot be compiled on this host (glib/webkit missing, B3), so app-crate code, including the IPC ping test, is not compile-verified.",
+              "files_changed": [
+                "worktrees/apicoord/t003/src-tauri/src/error.rs",
+                "worktrees/apicoord/t003/src-tauri/src/state.rs",
+                "worktrees/apicoord/t003/src-tauri/src/menu.rs",
+                "worktrees/apicoord/t003/src-tauri/src/commands/mod.rs",
+                "worktrees/apicoord/t003/src-tauri/src/commands/health.rs",
+                "worktrees/apicoord/t003/src-tauri/src/commands/file.rs",
+                "worktrees/apicoord/t003/src-tauri/src/commands/recent.rs",
+                "worktrees/apicoord/t003/src-tauri/src/commands/schema.rs",
+                "worktrees/apicoord/t003/src-tauri/src/commands/app.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/README.md",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/Cargo.toml",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/src/lib.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/Cargo.toml",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/lib.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/error.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/models.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/paths.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/textcodec.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/eol.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/doc.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/fsx.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/sniff.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/mru.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/schemas.rs",
+                "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/tests/task_t003_error.rs"
+              ],
+              "notes_for_qa": "1) The tests stay red until the handoff is applied: cd src-tauri && cp tests/t003_handoff/Cargo.toml Cargo.toml && cp tests/t003_handoff/src/lib.rs src/lib.rs && mkdir -p core && cp -r tests/t003_handoff/core/. core/ && rm -r tests/t003_handoff. 2) After that, `npx vitest run frontend/src/__tests__/tasks/task_t003` should pass (verified by re-running its assertions in node against a simulated tree). 3) `cargo test --manifest-path src-tauri/Cargo.toml -p apicoord-core` runs without webkit: 8 tests, including BUG-006's task_t003_error.rs (verified). 4) The full `cargo test` (app crate + ping_returns_ok_over_ipc) needs webkit2gtk-4.1/glib on the host (B3); it was not compile-verified here. 5) cargo is at ~/.cargo/bin, which is not on PATH for the gate shell.",
+              "assumptions": [
+                "The hook-blocked files (src-tauri/Cargo.toml, src-tauri/src/lib.rs, src-tauri/core/**) are applied verbatim by the architect/T0 owner from src-tauri/tests/t003_handoff/. Cargo does not compile subdirectories of tests/, so the staging area is inert.",
+                "Commands whose real work belongs to later tasks return AppError::Internal(\"<cmd> is not implemented yet.\") rather than todo!(), so the webview gets a rejected promise instead of a crash.",
+                "mru::load returns an empty list and schemas::ensure_copied is a no-op in the skeleton because both run in setup() and must not panic; the bundled schema files are vendored by the validation task.",
+                "get_schema takes `version: OpenApiVersion`, deserialised from \"3.0\"/\"3.1\", matching the TS contract.",
+                "From<io::Error> maps ErrorKind::NotFound to AppError::NotFound and everything else to IoError.",
+                "Capabilities (\u00a79.4), CSP (\u00a79.3) and package.json (\u00a79.1) are out of scope for T003 and owned by other T0 work; capabilities/default.json still lists dialog:allow-open/save.",
+                "No new crates beyond \u00a79.5 (tracing in app; serde, serde_json, thiserror and tempfile in core). No unsafe code. The only filesystem-boundary code is the command stubs, which read no paths yet. The tauri `test` feature is a dev-dependency, as BUG-006 requests."
+              ],
+              "disputed_tests": []
+            },
+            "text": "n as a node script (vitest is not installed, B4). The app crate cannot be compiled on this host (glib/webkit missing, B3), so app-crate code, including the IPC ping test, is not compile-verified.\", \"files_changed\": [\"worktrees/apicoord/t003/src-tauri/src/error.rs\", \"worktrees/apicoord/t003/src-tauri/src/state.rs\", \"worktrees/apicoord/t003/src-tauri/src/menu.rs\", \"worktrees/apicoord/t003/src-tauri/src/commands/mod.rs\", \"worktrees/apicoord/t003/src-tauri/src/commands/health.rs\", \"worktrees/apicoord/t003/src-tauri/src/commands/file.rs\", \"worktrees/apicoord/t003/src-tauri/src/commands/recent.rs\", \"worktrees/apicoord/t003/src-tauri/src/commands/schema.rs\", \"worktrees/apicoord/t003/src-tauri/src/commands/app.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/README.md\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/Cargo.toml\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/src/lib.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/Cargo.toml\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/lib.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/error.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/models.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/paths.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/textcodec.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/eol.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/doc.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/fsx.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/sniff.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/mru.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/schemas.rs\", \"worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/tests/task_t003_error.rs\"], \"notes_for_qa\": \"1) The tests stay red until the handoff is applied: cd src-tauri && cp tests/t003_handoff/Cargo.toml Cargo.toml && cp tests/t003_handoff/src/lib.rs src/lib.rs && mkdir -p core && cp -r tests/t003_handoff/core/. core/ && rm -r tests/t003_handoff. 2) After that, `npx vitest run frontend/src/__tests__/tasks/task_t003` should pass (verified by re-running its assertions in node against a simulated tree). 3) `cargo test --manifest-path src-tauri/Cargo.toml -p apicoord-core` runs without webkit: 8 tests, including BUG-006's task_t003_error.rs (verified). 4) The full `cargo test` (app crate + ping_returns_ok_over_ipc) needs webkit2gtk-4.1/glib on the host (B3); it was not compile-verified here. 5) cargo is at ~/.cargo/bin, which is not on PATH for the gate shell.\", \"assumptions\": [\"The hook-blocked files (src-tauri/Cargo.toml, src-tauri/src/lib.rs, src-tauri/core/**) are applied verbatim by the architect/T0 owner from src-tauri/tests/t003_handoff/. Cargo does not compile subdirectories of tests/, so the staging area is inert.\", \"Commands whose real work belongs to later tasks return AppError::Internal(\\\"<cmd> is not implemented yet.\\\") rather than todo!(), so the webview gets a rejected promise instead of a crash.\", \"mru::load returns an empty list and schemas::ensure_copied is a no-op in the skeleton because both run in setup() and must not panic; the bundled schema files are vendored by the validation task.\", \"get_schema takes `version: OpenApiVersion`, deserialised from \\\"3.0\\\"/\\\"3.1\\\", matching the TS contract.\", \"From<io::Error> maps ErrorKind::NotFound to AppError::NotFound and everything else to IoError.\", \"Capabilities (\u00a79.4), CSP (\u00a79.3) and package.json (\u00a79.1) are out of scope for T003 and owned by other T0 work; capabilities/default.json still lists dialog:allow-open/save.\", \"No new crates beyond \u00a79.5 (tracing in app; serde, serde_json, thiserror and tempfile in core). No unsafe code. The only filesystem-boundary code is the command stubs, which read no paths yet. The tauri `test` feature is a dev-dependency, as BUG-006 requests.\"], \"disputed_tests\": []}\n```",
+            "changed": [
+              "worktrees/apicoord/t003/src-tauri/src/commands/app.rs",
+              "worktrees/apicoord/t003/src-tauri/src/commands/file.rs",
+              "worktrees/apicoord/t003/src-tauri/src/commands/health.rs",
+              "worktrees/apicoord/t003/src-tauri/src/commands/mod.rs",
+              "worktrees/apicoord/t003/src-tauri/src/commands/recent.rs",
+              "worktrees/apicoord/t003/src-tauri/src/commands/schema.rs",
+              "worktrees/apicoord/t003/src-tauri/src/error.rs",
+              "worktrees/apicoord/t003/src-tauri/src/menu.rs",
+              "worktrees/apicoord/t003/src-tauri/src/state.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/Cargo.toml",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/README.md",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/Cargo.toml",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/doc.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/eol.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/error.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/fsx.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/lib.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/models.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/mru.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/paths.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/schemas.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/sniff.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/src/textcodec.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/core/tests/task_t003_error.rs",
+              "worktrees/apicoord/t003/src-tauri/tests/t003_handoff/src/lib.rs"
+            ],
+            "violations": []
+          },
+          "qa": {
+            "data": {
+              "criteria": [
+                {
+                  "criterion": 1,
+                  "status": "fail",
+                  "evidence": "In-tree src-tauri/core is missing and Cargo.toml still has tauri-plugin-fs with no workspace or apicoord-core dep. Staged handoff copy passes: cargo test -p apicoord-core in /tmp/sim ran 8 passed (6 unit + task_t003_error). The vitest gate test could not run (vite not installed, B4)."
+                },
+                {
+                  "criterion": 2,
+                  "status": "manual",
+                  "evidence": "commands/health.rs ping() returns \"ok\" and includes ping_returns_ok_over_ipc, but the app crate cannot be compiled on this host (B3). Read the code only."
+                },
+                {
+                  "criterion": 3,
+                  "status": "pass",
+                  "evidence": "Staged core error.rs: adjacently tagged AppError, snake_case. Its unit tests and task_t003_error.rs pass for every variant in /tmp/sim. Not yet in the real tree."
+                },
+                {
+                  "criterion": 4,
+                  "status": "fail",
+                  "evidence": "In-tree src/lib.rs registers only health::ping and still calls tauri_plugin_fs::init(); mod state/menu are not declared. Staged handoff lib.rs lists all 9 commands but is not applied."
+                }
+              ],
+              "tests_added": [],
+              "bugs": [
+                {
+                  "title": "T003 deliverables are staged under tests/t003_handoff, not applied to the real tree",
+                  "severity": "blocker",
+                  "steps": "Inspect worktrees/apicoord/t003/src-tauri: src/lib.rs, Cargo.toml and core/. Run cargo test --manifest-path src-tauri/Cargo.toml.",
+                  "expected": "lib.rs registers 9 commands, wires state/menu, uses no plugin-fs; workspace Cargo.toml and src-tauri/core exist; cargo test passes.",
+                  "actual": "lib.rs registers only ping and uses plugin-fs; core/ is missing; Cargo.toml has no workspace or core dep. In-place commands/*.rs and state.rs reference the missing apicoord_core, so the crate cannot compile. Fix: apply the copy commands in src-tauri/tests/t003_handoff/README.md, then delete the handoff dir."
+                }
+              ],
+              "summary": "Not accepted. The core crate is correct in the staged copy (8 tests pass in /tmp/sim), but the real src-tauri tree isn't wired: lib.rs, Cargo.toml and core/ are not applied, so criteria 1 and 4 fail in-tree. Vitest can't run (B4) and the app crate can't build (B3), so criterion 2 stays manual."
+            },
+            "text": "03_handoff/` and not in place.\n\n- **Tests I couldn't run:** the frontend gate test `frontend/src/__tests__/tasks/task_t003/rustSkeleton.test.ts` can't start here. `vitest` fails because `vite` and `@vitejs/plugin-react` aren't installed (B4). The \"PASSED\" run in the task prompt had empty output, so I counted it as not run.\n- **Gate test location:** I added no tests. `tests/task_t003/` doesn't exist. The gate test sits under `frontend/src/__tests__/\u2026`, which is not the documented `src/__tests__/tasks/` path. It would also be skipped if the gate ran from the project root.\n- **What I ran:** I copied the handoff into `/tmp/sim` and ran `cargo test -p apicoord-core --offline`. All 8 core tests passed: 6 unit tests plus `task_t003_error.rs` (2). That covers criterion 3 for the core crate.\n- **Not verified:** the app crate can't be built on this host (B3), so `ping_returns_ok_over_ipc` and the command stubs are uncompiled. I checked them by reading only.\n\n**Criteria:**\n1. **`cargo test` passes:** fail in-tree. `src-tauri/core/` doesn't exist, and `Cargo.toml` still lists `tauri-plugin-fs` with no workspace or core dependency. The staged copy builds and passes in `/tmp/sim`.\n2. **`ping` returns ok over IPC:** manual. `ping()` returns `\"ok\"` and the IPC test is in `health.rs`, but it can't compile on this host.\n3. **Errors serialize as `{code,message}`:** pass for the staged core crate. The in-tree `src/error.rs` re-exports `apicoord_core`, which isn't in place yet.\n4. **All 9 commands registered in `lib.rs`:** fail in-tree. The real `lib.rs` still registers only `health::ping` and still has `tauri_plugin_fs::init()`. The staged `lib.rs` lists all 9 commands, but it isn't applied. Meanwhile the in-place `commands/*.rs` and `state.rs` reference `apicoord_core`, so the real crate wouldn't compile even with a working toolchain.\n\nI'm filing the bug as a blocker, with the fix being the copy commands from the handoff `README.md`.\n\n```json\n{\"criteria\":[{\"criterion\":1,\"status\":\"fail\",\"evidence\":\"In-tree src-tauri/core is missing and Cargo.toml still has tauri-plugin-fs with no workspace or apicoord-core dep. Staged handoff copy passes: cargo test -p apicoord-core in /tmp/sim ran 8 passed (6 unit + task_t003_error). The vitest gate test could not run (vite not installed, B4).\"},{\"criterion\":2,\"status\":\"manual\",\"evidence\":\"commands/health.rs ping() returns \\\"ok\\\" and includes ping_returns_ok_over_ipc, but the app crate cannot be compiled on this host (B3). Read the code only.\"},{\"criterion\":3,\"status\":\"pass\",\"evidence\":\"Staged core error.rs: adjacently tagged AppError, snake_case. Its unit tests and task_t003_error.rs pass for every variant in /tmp/sim. Not yet in the real tree.\"},{\"criterion\":4,\"status\":\"fail\",\"evidence\":\"In-tree src/lib.rs registers only health::ping and still calls tauri_plugin_fs::init(); mod state/menu are not declared. Staged handoff lib.rs lists all 9 commands but is not applied.\"}],\"tests_added\":[],\"bugs\":[{\"title\":\"T003 deliverables are staged under tests/t003_handoff, not applied to the real tree\",\"severity\":\"blocker\",\"steps\":\"Inspect worktrees/apicoord/t003/src-tauri: src/lib.rs, Cargo.toml and core/. Run cargo test --manifest-path src-tauri/Cargo.toml.\",\"expected\":\"lib.rs registers 9 commands, wires state/menu, uses no plugin-fs; workspace Cargo.toml and src-tauri/core exist; cargo test passes.\",\"actual\":\"lib.rs registers only ping and uses plugin-fs; core/ is missing; Cargo.toml has no workspace or core dep. In-place commands/*.rs and state.rs reference the missing apicoord_core, so the crate cannot compile. Fix: apply the copy commands in src-tauri/tests/t003_handoff/README.md, then delete the handoff dir.\"}],\"summary\":\"Not accepted. The core crate is correct in the staged copy (8 tests pass in /tmp/sim), but the real src-tauri tree isn't wired: lib.rs, Cargo.toml and core/ are not applied, so criteria 1 and 4 fail in-tree. Vitest can't run (B4) and the app crate can't build (B3), so criterion 2 stays manual.\"}\n```",
+            "changed": [],
+            "violations": []
+          },
+          "qa_bugs": [
+            "BUG-006"
+          ]
         },
         "tests_written": true,
         "test_dir": "projects/apicoord/tests/task_t003",
@@ -299,7 +428,17 @@
             "test": "lib.rs generate_handler! lists exactly the nine \u00a75.1 commands; each registered name is a #[tauri::command] fn in commands/<module>.rs"
           }
         ],
-        "test_count": 0
+        "test_count": 0,
+        "assumptions": [
+          "The hook-blocked files (src-tauri/Cargo.toml, src-tauri/src/lib.rs, src-tauri/core/**) are applied verbatim by the architect/T0 owner from src-tauri/tests/t003_handoff/. Cargo does not compile subdirectories of tests/, so the staging area is inert.",
+          "Commands whose real work belongs to later tasks return AppError::Internal(\"<cmd> is not implemented yet.\") rather than todo!(), so the webview gets a rejected promise instead of a crash.",
+          "mru::load returns an empty list and schemas::ensure_copied is a no-op in the skeleton because both run in setup() and must not panic; the bundled schema files are vendored by the validation task.",
+          "get_schema takes `version: OpenApiVersion`, deserialised from \"3.0\"/\"3.1\", matching the TS contract.",
+          "From<io::Error> maps ErrorKind::NotFound to AppError::NotFound and everything else to IoError.",
+          "Capabilities (\u00a79.4), CSP (\u00a79.3) and package.json (\u00a79.1) are out of scope for T003 and owned by other T0 work; capabilities/default.json still lists dialog:allow-open/save.",
+          "No new crates beyond \u00a79.5 (tracing in app; serde, serde_json, thiserror and tempfile in core). No unsafe code. The only filesystem-boundary code is the command stubs, which read no paths yet. The tauri `test` feature is a dev-dependency, as BUG-006 requests."
+        ],
+        "disputed_tests": []
       },
       {
         "id": "T004",
@@ -313,9 +452,12 @@
           "Perf mark helpers emit apicoord:ks and apicoord:commit",
           "At least one vitest passes"
         ],
-        "status": "in_progress",
-        "attempts": 1,
-        "last_issues": [],
+        "status": "todo",
+        "attempts": 0,
+        "last_issues": [
+          "You changed files you don't own: worktrees/apicoord/t004/tsconfig.tsbuildinfo. Revert those changes and describe what you need from their owner in your summary instead.",
+          "The Operator sent this task back to you with this note: tsconfig.tsbuildinfo is now in IGNORED_SUFFIXES \u2014 no longer counts as a lane violation. Retry."
+        ],
         "reviews": [],
         "ownership_gaps": [
           "projects/apicoord/src/ipc/types.ts",
@@ -325,9 +467,6 @@
           "projects/apicoord/src/lib/perf.ts",
           "projects/apicoord/src/workers/parseProtocol.ts"
         ],
-        "checkpoint": {
-          "attempt": 1
-        },
         "tests_written": true,
         "test_dir": "projects/apicoord/tests/task_t004",
         "test_contract": "package.json scripts.typecheck = 'tsc -b' and it passes. src/ipc/types.ts exports every type/interface in the ipc-contract.md \u00a75.3 ts block with identical union literals / field names+optionality, plus `export type MenuAction = 'open'|'save'|'save-as'|'close'|'recent'|'exit'`. Exported functions in src/ipc/{health,file,recent,schema,app}.ts together call invoke from '@tauri-apps/api/core' with exactly: ping, open_spec_dialog, open_recent {path}, save_spec {text, clean}, save_spec_as {text, clean}, close_document, list_recent, get_schema {version}, exit_app; each wrapper rejects with the invoke rejection object ({code, message}) unchanged. src/ipc/events.ts exported functions take a callback and call listen from '@tauri-apps/api/event' for exactly 'menu://action' and 'recent://changed'. src/perf/marks.ts exports markKeystroke() -> performance.mark('apicoord:ks') and markCommit(seq) -> performance.mark('apicoord:commit', {detail:{seq}}), one mark per call. src/state/store.ts exports zustand `useStore` whose initial getState() has doc:null, language 'yaml'|'json', languageOverridden:false, savedVersionId, dirty:false, previewStatus:{kind:'none'}, spec:null, specHash:null, lastSeq, markerCount:0, recent:[], notice:null, cursor. src/features/file/fileActions.ts exports `fileActions` with functions open, openRecent, save, saveAs, close, exit, windowClose, confirmDiscardIfDirty. src/features/preview/protocol.ts exports interface ParseRequest {seq, text, language} and type ParseReply.",
@@ -373,7 +512,25 @@
             "test": "store_fileActions_and_parse_protocol_skeletons_have_contract_shape"
           }
         ],
-        "test_count": 0
+        "test_count": 0,
+        "assumptions": [
+          "zustand 5.1.0 is already in node_modules but not declared in package.json; the architect adds the dependency (\u00a79.1) so a clean npm install keeps it",
+          "The `call` helper lives in its own src/ipc/invoke.ts so the command modules export only command wrappers (the task test calls every exported function in them)",
+          "Rust drives menu enable/disable; the webview only sets the window title and destroys the window"
+        ],
+        "disputed_tests": [],
+        "escalation_note": "projects/apicoord/reviews/T004-escalation.md",
+        "escalations": [
+          {
+            "time": "2026-11-26T09:29:08",
+            "attempts": 3,
+            "issues": [
+              "You changed files you don't own: worktrees/apicoord/t004/tsconfig.tsbuildinfo. Revert those changes and describe what you need from their owner in your summary instead."
+            ],
+            "notes": "tsconfig.tsbuildinfo is now in IGNORED_SUFFIXES \u2014 no longer counts as a lane violation. Retry."
+          }
+        ],
+        "earlier_attempts": 3
       },
       {
         "id": "T005",
@@ -387,13 +544,16 @@
           "monaco-yaml 3.1 behaviour documented",
           "CSP confirmed or required change listed"
         ],
-        "status": "todo",
-        "attempts": 0,
+        "status": "in_progress",
+        "attempts": 1,
         "last_issues": [],
         "reviews": [],
         "ownership_gaps": [
           "projects/apicoord/src/spikes/RESULTS.md"
-        ]
+        ],
+        "checkpoint": {
+          "attempt": 1
+        }
       },
       {
         "id": "T006",
@@ -716,39 +876,47 @@
         "severity": "major",
         "status": "fixed",
         "path": "projects/apicoord/bugs/BUG-005.md"
+      },
+      {
+        "id": "BUG-006",
+        "task": "T003",
+        "title": "T003 deliverables are staged under tests/t003_handoff, not applied to the real tree",
+        "severity": "blocker",
+        "status": "open",
+        "path": "projects/apicoord/bugs/BUG-006.md"
       }
     ],
-    "cost_usd": 20.447,
+    "cost_usd": 24.7553,
     "cost_by_phase": {
       "building": {
         "architect-desktop": {
-          "cost_usd": 3.2208,
-          "calls": 7,
+          "cost_usd": 4.0297,
+          "calls": 8,
           "tokens": {
-            "input": 142,
-            "output": 49503,
-            "cache_read": 3418665,
-            "cache_write": 193035
+            "input": 190,
+            "output": 60709,
+            "cache_read": 4777791,
+            "cache_write": 232078
           }
         },
         "qa-engineer": {
-          "cost_usd": 3.6524,
-          "calls": 6,
+          "cost_usd": 3.9378,
+          "calls": 7,
           "tokens": {
-            "input": 86,
-            "output": 50899,
-            "cache_read": 2258838,
-            "cache_write": 373228
+            "input": 96,
+            "output": 53553,
+            "cache_read": 2499566,
+            "cache_write": 431341
           }
         },
         "auditor": {
-          "cost_usd": 1.5558,
-          "calls": 3,
+          "cost_usd": 1.8535,
+          "calls": 4,
           "tokens": {
-            "input": 36,
-            "output": 13462,
-            "cache_read": 665367,
-            "cache_write": 143995
+            "input": 38,
+            "output": 13726,
+            "cache_read": 668555,
+            "cache_write": 180378
           }
         },
         "packaging-engineer": {
@@ -760,16 +928,36 @@
             "cache_read": 198263,
             "cache_write": 40877
           }
+        },
+        "frontend-dev-tauri": {
+          "cost_usd": 1.3724,
+          "calls": 3,
+          "tokens": {
+            "input": 58,
+            "output": 23357,
+            "cache_read": 1280940,
+            "cache_write": 81007
+          }
+        },
+        "rust-dev": {
+          "cost_usd": 1.5439,
+          "calls": 1,
+          "tokens": {
+            "input": 30,
+            "output": 35842,
+            "cache_read": 873286,
+            "cache_write": 81503
+          }
         }
       }
     },
     "summary": null,
     "design_notes": null,
     "tokens": {
-      "input": 710,
-      "output": 379265,
-      "cache_read": 11050827,
-      "cache_write": 1684875
+      "input": 858,
+      "output": 452588,
+      "cache_read": 14808095,
+      "cache_write": 1980924
     },
     "research": [
       "studio/research/INDEX.md",
@@ -829,6 +1017,12 @@
       "T0: create the \u00a712 skeletons plus core/src/error.rs and src/ipc/types.ts from \u00a75.3, replace src-tauri/src/error.rs with a re-export, and vendor oas-3.0.json/oas-3.1.json with the sha256 values recorded in \u00a79.5",
       "T0b (QA): fixtures, plus a timing harness built on apicoord:ks/apicoord:commit marks that measures a tauri build release binary on Windows; p95 under 250ms is a hard gate for both Petstore and big-10k",
       "Spikes (a) menu accelerator vs Monaco focus in WebView2, (b) monaco-yaml with 3.1 $dynamicRef, (c) strict CSP vs swagger-ui/Monaco. Results decide \u00a77 shortcut ownership and confirm the \u00a79.3 CSP"
-    ]
+    ],
+    "paused": {
+      "kind": "usage_wrap_up",
+      "message": "Plan usage is at 87% (budget 85%), so the team finished its work in progress and paused to leave you headroom. Usage resets at 16:20 on Nov 26; resume with `run` then, raise the budget with `budget <percent>`, or `run --ignore-usage` to continue now.",
+      "resets_at": 1795710000,
+      "time": "2026-11-26T15:57:29"
+    }
   }
 }
