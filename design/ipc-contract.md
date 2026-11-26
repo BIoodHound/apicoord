@@ -4,14 +4,18 @@
 > If the two ever disagree, §5 wins and this file is fixed. Keep it in sync with the Rust registry in
 > `src-tauri/src/lib.rs` and the TS wrappers in `src/ipc/`.
 >
-> **Implementation status (T002, 2026-11-25):** only `ping` is registered. The other commands and events are the M1 target
+> **Implementation status (T002, 2026-11-26):** only `ping` is registered. The other commands and events are the M1 target
 > and arrive with feature tasks.
 >
 > **Capability per command:** every command below needs only `core:default` (the app's own commands are allowed by default).
 > The complete webview permission set is `core:default`, `core:window:allow-set-title` (capabilities/default.json) and
 > `core:window:allow-destroy` (capabilities/window-lifecycle.json). No `fs:*`, `http:*`, `shell:*` or `dialog:*` permission exists.
 
-## 5.1 Commands
+## 5. Rust ↔ UI contract (commands, events, types) — authoritative
+
+`design/ipc-contract.md` mirrors this section verbatim (copied in T001, re-synced in T002); change both files together, in the same task.
+
+### 5.1 Commands
 
 All commands are `async`, return `Result<T, AppError>`, and run on the tokio pool. Dialogs use the Rust `tauri_plugin_dialog::DialogExt` **blocking** API, which is legal off the main thread and gives the webview no dialog capability.
 
@@ -35,7 +39,7 @@ Menu enable/disable (Save/Save As/Close) is driven by Rust from the `current` tr
 
 **Atomic write** (`core::fsx::atomic_write(path, bytes)`): write `.<name>.apicoord-tmp-<pid>` in the same dir → `sync_all` → `rename` over the target. On Windows, `ERROR_SHARING_VIOLATION`/`ERROR_LOCK_VIOLATION`/`ERROR_ACCESS_DENIED` on rename get **5 retries × 50ms**, then `locked`. The temp file is removed on any failure, and the original is never truncated first.
 
-## 5.2 Events (Rust → webview)
+### 5.2 Events (Rust → webview)
 
 | Event | Payload | Emitted when |
 |---|---|---|
@@ -44,7 +48,7 @@ Menu enable/disable (Save/Save As/Close) is driven by Rust from the `current` tr
 
 `MenuAction = "open" | "save" | "save-as" | "close" | "recent" | "exit"`; `path` is set only for `"recent"`. Menu item IDs: `file.open`, `file.save`, `file.save-as`, `file.close`, `file.exit`, `file.recent.<0..4>`. **Exit is a normal item, not `PredefinedMenuItem::quit`**, because the predefined item would bypass the dirty guard.
 
-## 5.3 Types
+### 5.3 Types
 
 Rust: `#[serde(rename_all = "camelCase")]` on structs. TS mirrors live in `src/ipc/types.ts`.
 
@@ -89,7 +93,7 @@ pub enum AppError {
 ```
 Tauri rejects the `invoke` promise with that **object**, not a string, so the existing comment in `src-tauri/src/error.rs` about `Display`/`code:` prefixes is wrong and should go. The TS wrappers rethrow it typed as `AppError`. Messages are human-readable sentences. `unsupported_encoding` → "This file isn't UTF-8 or UTF-16 and can't be opened safely."
 
-## 5.4 Text and path rules (core)
+### 5.4 Text and path rules (core)
 
 - **Decode:** BOM `EF BB BF` → UTF-8+BOM; `FF FE` → UTF-16LE; `FE FF` → UTF-16BE; otherwise strict `std::str::from_utf8` → UTF-8, and anything else → `unsupported_encoding`. BOM-less UTF-16 is unsupported. Decoding is std-only (`String::from_utf8`, `char::decode_utf16`). **No `encoding_rs`**, because it can't encode UTF-16 and we don't support legacy codecs.
 - **EOL count:** `crlf` = count of `\r\n`, `lf` = lone `\n`, lone `\r` counted as lf. `mixed = crlf>0 && lf>0`. Majority: crlf if crlf>lf else lf.

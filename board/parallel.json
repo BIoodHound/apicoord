@@ -198,5 +198,43 @@
       "source": "product-manager",
       "predicted_before_done": true
     }
+  },
+  "actual": {
+    "T001": [
+      "projects/apicoord/bugs/001-ipc-contract-not-replaced.md",
+      "projects/apicoord/design/architecture.md",
+      "projects/apicoord/design/ipc-contract.md",
+      "projects/apicoord/frontend/src/__tests__/tasks/task_t001/ipc-contract.test.ts",
+      "projects/apicoord/reviews/T001-escalation.md",
+      "projects/apicoord/reviews/T001-review.md"
+    ],
+    "T002": [
+      "projects/apicoord/bugs/t002-qa-lane-blocked-gate-tests-undeliverable.md",
+      "projects/apicoord/design/architecture.md",
+      "projects/apicoord/design/ipc-contract.md",
+      "projects/apicoord/package-lock.json",
+      "projects/apicoord/package.json",
+      "projects/apicoord/reviews/T002-escalation.md",
+      "projects/apicoord/reviews/T002-review.md",
+      "projects/apicoord/src-tauri/Cargo.toml",
+      "projects/apicoord/src-tauri/capabilities/default.json",
+      "projects/apicoord/src-tauri/capabilities/window-lifecycle.json",
+      "projects/apicoord/src-tauri/tauri.conf.json",
+      "projects/apicoord/tsconfig.json",
+      "projects/apicoord/tsconfig.tsbuildinfo",
+      "projects/apicoord/vite.config.ts"
+    ],
+    "T004": [
+      "projects/apicoord/frontend/src/__tests__/tasks/task_t004/ts-skeletons.test.ts"
+    ],
+    "T003": [
+      "projects/apicoord/bugs/BUG-006.md",
+      "projects/apicoord/frontend/src/__tests__/tasks/task_t003/rustSkeleton.test.ts"
+    ],
+    "T014": [
+      "projects/apicoord/frontend/src/__tests__/tasks/task_t014/runbook.test.ts",
+      "projects/apicoord/packaging/RELEASE-RUNBOOK.md",
+      "projects/apicoord/reviews/T014-review.md"
+    ]
   }
 }

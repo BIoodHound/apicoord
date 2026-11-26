@@ -3,8 +3,8 @@
 > Owned by the architect. Everyone else reads it to know where things go.
 > State: **Increment 1 (M1) — "a working split view" — BUILD, T002 (T0) attempt 4: architect-lane part of §0.2 applied (2026-11-25); see §0.3 for what still needs other owners.**
 > Specs `design/specs/m1-*.md` (operator-approved), council decision `design/council/m1/decision.md`,
-> operator answers Q1–Q7 folded into §13. §5 is the **authoritative IPC contract**, and `design/ipc-contract.md`
-> now mirrors it verbatim (D16).
+> operator answers Q1–Q7 folded into §13. §5 is the **authoritative IPC contract**; `design/ipc-contract.md`
+> holds a verbatim copy of §5 (T001, D16) and must be updated in the same task whenever §5 changes.
 > Note on vocabulary: this is a Tauri desktop app, not a game. "Scene tree" = React component tree (§3),
 > "autoloads" = app-lifetime singletons (§4), "gameplay ↔ UI signals" = Rust ↔ webview commands/events (§5),
 > "physics layers" = trust boundaries (§8), "input actions" = shortcuts (§7).
@@ -18,7 +18,7 @@ These are outside every agent's lane, and each one blocks T0.
 | # | Problem (verified 2026-11-24) | Fix |
 |---|---|---|
 | B1 | The configured test gate is `cd backend && mvn -q test` / `cd frontend && npm test`. **Neither directory exists**; the gate fails on `cd`. Cause: `PIPELINE_STACK` defaults to `java-spring+ts-react` (`orchestrator/runner_adapter.py`). | Run apicoord with `PIPELINE_STACK=rust-tauri+ts-react`. That adapter already exists and runs `cd src-tauri && cargo test` + `npm test -- --run` at the project root, with task tests at `src-tauri` test names `task_<id>` and `src/__tests__/tasks/task_<id>/`. |
-| B2 | The file-ownership hook uses the Spring lane map (`backend/pom.xml`, `frontend/package.json`, `api-contract.md`). In this repo the architect can't write `package.json`, `tsconfig.json`, `vite.config.ts`, `src-tauri/Cargo.toml`, `tauri.conf.json`, `capabilities/*`, `src-tauri/src/lib.rs` or `design/ipc-contract.md`, although §2 assigns them to the architect. | Re-map the architect lane for the tauri stack (the §2 table). Until then, **this document is the authoritative IPC contract (§5)**, and T0's owner applies the config deltas in §9 verbatim. |
+| B2 | The file-ownership hook uses the Spring lane map (`backend/pom.xml`, `frontend/package.json`, `api-contract.md`). In this repo the architect can't write `package.json`, `tsconfig.json`, `vite.config.ts`, `src-tauri/Cargo.toml`, `tauri.conf.json`, `capabilities/*`, `src-tauri/src/lib.rs` or `design/ipc-contract.md`, although §2 assigns them to the architect. | Re-map the architect lane for the tauri stack (the §2 table). Until then, **this document is the authoritative IPC contract (§5)**, and T0's owner applies the config deltas in §9 verbatim. T001 was still blocked on 2026-11-24 (attempt 2). Whoever is allowed to write `design/ipc-contract.md` replaces it with the title `# APICoord — IPC contract`, a blank line, then the output of `awk '/^## 5\. /{f=1} /^## 6\. /{f=0} f' design/architecture.md`. |
 | B3 | The gate host (Raspberry Pi, linux-arm64) has **no `cargo`** and no `webkit2gtk-4.1`. Any `cargo test` that builds the `tauri` crate fails on this host. | Install rustup + Tauri's Linux prerequisites (`libwebkit2gtk-4.1-dev`, `libsoup-3.0-dev`, `libjavascriptcoregtk-4.1-dev`, `librsvg2-dev`, `build-essential`, `pkg-config`). Independently, §2 puts all logic in a tauri-free crate, `apicoord-core`, so `cargo test -p apicoord-core` works on any host with only rustup. |
 
 | B4 | `node_modules/` is absent, so `npm test -- --run` fails with `vitest: not found`. The architect may not run `npm install`. | T0 (per m1-foundation, "a build with the pinned deps succeeds") runs `npm install` after applying §9.1 and commits `package-lock.json`. |
@@ -107,6 +107,18 @@ Attempt 4 was rejected because it wrote `package-lock.json` and `tsconfig.tsbuil
   swagger-ui-react 5.36.0, @monaco-editor/react 4.7.0, zustand 5.1.0 and yaml 2.9.1, all within the pins.
 - Steps 7–9 of §0.3 (lib.rs, `src-tauri/core/**` + schema `curl`, QA tests) still need their owners, as listed above.
 
+### 0.5 T002 attempt 6 (2026-11-26): lockfile generated; merge conflicts resolved
+
+The operator added `package-lock.json`, `Cargo.lock` and `tsconfig.*.json` to the architect lane, and `.tsbuildinfo` is ignored.
+- `npm install` was run at the project root and `package-lock.json` was written (name `apicoord`; root deps equal package.json). It resolved
+  react/react-dom 18.3.1, monaco-editor 0.54.0, monaco-yaml 5.5.1, swagger-ui-react 5.36.0, @monaco-editor/react 4.7.0 and zustand 5.1.0.
+  `npm run typecheck` → 0, and `npm test -- --run` → 18/18 (App + T001 + T014 tests).
+- The merge conflicts with main in this file, `ipc-contract.md` and `reviews/T002-escalation.md` are resolved. `ipc-contract.md` again holds §5 verbatim.
+- **Still outside the architect lane (the hook rejected lib.rs and core/Cargo.toml again):** step 7 (`lib.rs`: drop `tauri_plugin_fs`) and
+  step 8 (`src-tauri/core/**` + schemas), both for rust-dev; step 9 (QA tests incl. `src-tauri/core/tests/*.rs`) for qa-engineer; `tests/task_t002/` does not exist.
+  Until step 8 lands, `cargo` cannot load the workspace and `Cargo.lock` cannot be generated. The architect generates `Cargo.lock` after that.
+  The host still lacks webkit2gtk-4.1 (B3), so the full app-crate test needs the Tauri Linux prerequisites.
+
 ### 0.2 T002 apply-verbatim file set (for the orchestrator, or for the architect once B2 is re-mapped)
 
 Each block is the **complete file content**. The order matters only for step 9 (npm install after package.json).
@@ -188,7 +200,7 @@ export default defineConfig({
 4. **`src-tauri/tauri.conf.json`** (overwrite; this is the current file plus `label` and the §9.3 CSP objects)
 ```json
 {
-  "$schema": "https://schema.tauri.app/config/2",
+  "$schema": "<unchanged from the scaffold: the Tauri v2 config schema>",
   "productName": "APICoord",
   "version": "0.0.1",
   "identifier": "com.weeznha.apicoord",
@@ -479,7 +491,7 @@ Bootstrap order in `App` (one effect): `listen('menu://action')` → `listen('re
 
 ## 5. Rust ↔ UI contract (commands, events, types) — authoritative
 
-`design/ipc-contract.md` mirrors this section verbatim (synced 2026-11-25).
+`design/ipc-contract.md` mirrors this section verbatim (copied in T001, re-synced in T002); change both files together, in the same task.
 
 ### 5.1 Commands
 
